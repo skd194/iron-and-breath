@@ -1,0 +1,58 @@
+/* Iron & Breath — design tokens.
+   "Iron" = dark slate surfaces; "Breath" = a calm teal accent. */
+:root {
+  /* Palette */
+  --iron-950: #0b0f14;
+  --iron-900: #10161d;
+  --iron-850: #151c25;
+  --iron-800: #1b2430;
+  --iron-700: #26313f;
+  --iron-600: #35404f;
+  --iron-500: #4a5666;
+
+  --text-strong: #f3f6f9;
+  --text: #cdd6e0;
+  --text-muted: #8b98a8;
+  --text-faint: #5d6a7a;
+
+  --breath-500: #2dd4bf; /* teal accent */
+  --breath-400: #4fe3d1;
+  --breath-600: #14b8a6;
+  --ember-500: #f97362;  /* warm accent for warm-up / alerts */
+  --gold-500: #f5c451;
+
+  --ok-500: #34d399;
+  --warn-500: #fbbf24;
+  --danger-500: #f87171;
+
+  /* Heatmap scale (empty -> full) */
+  --heat-0: #182029;
+  --heat-1: #123a37;
+  --heat-2: #14675d;
+  --heat-3: #1c9d8a;
+  --heat-4: #2dd4bf;
+
+  /* Spacing */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+
+  /* Radius */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-pill: 999px;
+
+  /* Type */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  --ring-track: var(--iron-700);
+}

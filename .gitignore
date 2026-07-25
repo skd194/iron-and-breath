@@ -1,0 +1,29 @@
+# ---- .NET ----
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# ---- Local database (SQLite) ----
+data/
+*.db
+*.db-shm
+*.db-wal
+**/verify.db
+**/ironandbreath-design.db
+
+# ---- Node / client ----
+node_modules/
+client/dist/
+client/.vite/
+*.local
+
+# ---- Env / secrets ----
+.env
+.env.*
+!.env.example
+
+# ---- OS ----
+.DS_Store
+Thumbs.db

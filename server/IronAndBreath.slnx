@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="IronAndBreath.Api/IronAndBreath.Api.csproj" />
+  <Project Path="IronAndBreath.Domain/IronAndBreath.Domain.csproj" />
+  <Project Path="IronAndBreath.Infrastructure/IronAndBreath.Infrastructure.csproj" />
+  <Project Path="IronAndBreath.Tests/IronAndBreath.Tests.csproj" />
+</Solution>
