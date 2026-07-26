@@ -36,9 +36,12 @@ public class SessionsController : ControllerBase
             query = query.Where(s => s.Date <= to.Value);
         }
 
+        // Order by Id (monotonic with insertion) as the tiebreaker rather than
+        // StartedAt — SQLite can't ORDER BY a DateTimeOffset, and Id keeps this
+        // query portable to PostgreSQL too.
         var sessions = await query
             .OrderByDescending(s => s.Date)
-            .ThenByDescending(s => s.StartedAt)
+            .ThenByDescending(s => s.Id)
             .ToListAsync(ct);
 
         return Ok(sessions.Select(ToDto).ToList());

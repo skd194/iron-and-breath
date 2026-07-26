@@ -1,0 +1,28 @@
+{
+  "_note": "youTubeId values below were sourced via web search of public 'how to / proper form' tutorials and are NOT verified for embedding permission, exact form correctness, or licensing. REVIEW each clip and replace as needed before shipping. Leave youTubeId empty to fall back to the 'no video yet' placeholder. The seeder runs on startup in Development and is idempotent. Duplicate exercise names (e.g. Push-ups) are matched by name and share the clip.",
+  "videos": [
+    { "exercise": "Dumbbell Floor Press", "youTubeId": "AqYFvc9t_vU", "title": "Dumbbell Floor Press — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Dumbbell Shoulder Press", "youTubeId": "qEwKCR5JCog", "title": "Dumbbell Shoulder Press — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Dumbbell Floor Flyes", "youTubeId": "bgC53-J-6gA", "title": "Dumbbell Floor Fly — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Push-ups", "youTubeId": "mECzqUIDWfU", "title": "Push-ups — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Lateral Raises", "youTubeId": "pgrWjBfaFe8", "title": "Lateral Raises — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Tricep Dumbbell Extension", "youTubeId": "X-iV-cG8cYs", "title": "Overhead Dumbbell Tricep Extension — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Goblet Squat", "youTubeId": "2LnkzQ7paAc", "title": "Goblet Squat — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Dumbbell Romanian Deadlift", "youTubeId": "hQgFixeXdZo", "title": "Dumbbell Romanian Deadlift — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Walking Lunges", "youTubeId": "_DLIS8SySzs", "title": "Walking Lunges — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Standing Calf Raise", "youTubeId": "H6WptvjXkgw", "title": "Standing Calf Raise — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Plank Hold", "youTubeId": "A2b2EmIg0dA", "title": "Plank — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Lying Leg Raises", "youTubeId": "Wp4BlxcFTkE", "title": "Lying Leg Raises — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Single-Arm Dumbbell Row", "youTubeId": "H72k2iGxX_g", "title": "Single-Arm Dumbbell Row — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Renegade Row", "youTubeId": "NTl_ALR8Tlc", "title": "Renegade Row — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Bicep Curl", "youTubeId": "XE_pHwbst04", "title": "Dumbbell Bicep Curl — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Hammer Curl", "youTubeId": "8XLxfXROrTo", "title": "Dumbbell Hammer Curl — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Rear Delt Flye", "youTubeId": "dA4iqyTgx5I", "title": "Bent-Over Rear Delt Flye — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Towel Row Under Table (or Pull-ups)", "youTubeId": "6zyx46Vpato", "title": "Pull-ups (beginner) — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Dumbbell Thruster", "youTubeId": "He4-ttcwthg", "title": "Dumbbell Thruster — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Dumbbell Deadlift", "youTubeId": "Ipi8_vz8_z0", "title": "Dumbbell Deadlift — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Bent-Over Row", "youTubeId": "ayBUERt_w6g", "title": "Dumbbell Bent-Over Row — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Russian Twist", "youTubeId": "JyUqwkVpsi8", "title": "Russian Twist — form guide", "attribution": "YouTube (web search result — verify before shipping)" },
+    { "exercise": "Bicycle Crunch", "youTubeId": "wpRI3xBhJmo", "title": "Bicycle Crunch — form guide", "attribution": "YouTube (web search result — verify before shipping)" }
+  ]
+}

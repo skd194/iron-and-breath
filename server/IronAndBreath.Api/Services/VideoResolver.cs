@@ -25,9 +25,18 @@ public class VideoResolver : IVideoResolver
             _ => string.Empty
         };
 
+        // For YouTube, derive a thumbnail from the id when none was stored.
+        var thumbnail = video.ThumbnailUrl;
+        if (string.IsNullOrEmpty(thumbnail)
+            && video.Provider == VideoProvider.YouTube
+            && !string.IsNullOrEmpty(video.ExternalId))
+        {
+            thumbnail = $"https://i.ytimg.com/vi/{video.ExternalId}/hqdefault.jpg";
+        }
+
         return new VideoDto(
             embedUrl,
-            video.ThumbnailUrl,
+            thumbnail,
             video.Title,
             video.DurationSeconds,
             video.Attribution);

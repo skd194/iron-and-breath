@@ -172,3 +172,59 @@ main {
 .grid { display: grid; gap: var(--sp-4); }
 .muted { color: var(--text-muted); }
 .mono { font-family: var(--font-mono); }
+
+.badge.ok { background: rgba(52, 211, 153, 0.14); color: var(--ok-500); }
+.badge.warn { background: rgba(251, 191, 36, 0.14); color: var(--warn-500); }
+
+/* ---- Modal (shared) ---- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: grid;
+  place-items: center;
+  z-index: 50;
+  padding: var(--sp-4);
+}
+.modal {
+  width: min(440px, 94vw);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+}
+
+/* ---- Form fields (shared) ---- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.field-check {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.field input[type='date'],
+.field input[type='number'],
+.field select {
+  background: var(--iron-800);
+  border: 1px solid var(--iron-700);
+  border-radius: var(--r-sm);
+  color: var(--text-strong);
+  padding: var(--sp-2) var(--sp-3);
+  font-family: inherit;
+  font-size: 14px;
+}
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--breath-600);
+}

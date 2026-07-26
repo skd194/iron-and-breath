@@ -37,6 +37,11 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await DbInitializer.MigrateAndSeedAsync(db);
+
+    var seedRelPath = app.Configuration["VideoSeed:Path"] ?? "Seed/video-seed.json";
+    var seedPath = Path.Combine(app.Environment.ContentRootPath, seedRelPath);
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("VideoSeeder");
+    await VideoSeeder.SeedAsync(db, seedPath, logger);
 }
 
 if (app.Environment.IsDevelopment())

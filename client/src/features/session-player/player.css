@@ -199,28 +199,6 @@
   font-size: 12px;
 }
 
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: grid;
-  place-items: center;
-  z-index: 50;
-}
-.modal {
-  width: min(420px, 92vw);
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
-}
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--sp-3);
-  margin-top: var(--sp-2);
-}
-
 /* Finished */
 .player.finished {
   align-items: center;
