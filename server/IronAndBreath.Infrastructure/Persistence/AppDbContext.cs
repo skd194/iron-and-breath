@@ -10,6 +10,7 @@ public class AppDbContext : DbContext
     {
     }
 
+    public DbSet<User> Users => Set<User>();
     public DbSet<WorkoutDay> WorkoutDays => Set<WorkoutDay>();
     public DbSet<Exercise> Exercises => Set<Exercise>();
     public DbSet<ExerciseVideo> ExerciseVideos => Set<ExerciseVideo>();
@@ -22,11 +23,28 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<User>(b =>
+        {
+            b.Property(x => x.Email).IsRequired().HasMaxLength(256);
+            b.Property(x => x.DisplayName).IsRequired().HasMaxLength(120);
+            b.Property(x => x.PasswordHash).HasMaxLength(400);
+            b.Property(x => x.GoogleSubject).HasMaxLength(64);
+            b.HasIndex(x => x.Email).IsUnique();
+            b.HasIndex(x => x.GoogleSubject).IsUnique();
+        });
+
         modelBuilder.Entity<WorkoutDay>(b =>
         {
             b.Property(x => x.Name).IsRequired().HasMaxLength(100);
             b.Property(x => x.Focus).HasMaxLength(200);
             b.HasIndex(x => x.SortOrder);
+
+            // Null UserId = seeded template. User-owned days cascade-delete with the user.
+            b.HasOne(x => x.User)
+                .WithMany(u => u.WorkoutDays)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasIndex(x => x.UserId);
         });
 
         modelBuilder.Entity<Exercise>(b =>
@@ -72,9 +90,15 @@ public class AppDbContext : DbContext
                 .HasForeignKey(x => x.WorkoutDayId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            b.HasOne(x => x.User)
+                .WithMany(u => u.Sessions)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Indexes that back the calendar/stats queries.
             b.HasIndex(x => x.Date);
             b.HasIndex(x => x.WorkoutDayId);
+            b.HasIndex(x => new { x.UserId, x.Date });
         });
 
         modelBuilder.Entity<SessionSetLog>(b =>
@@ -96,6 +120,11 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<UserProgramSettings>(b =>
         {
             b.Property(x => x.DaysPerWeekTarget).HasDefaultValue(4);
+            b.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasIndex(x => x.UserId).IsUnique();
         });
 
         SeedData.Apply(modelBuilder);

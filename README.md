@@ -1,11 +1,14 @@
 # Iron & Breath — Home Workout Tracker
 
-A local-first, full-stack tracker for a 4-day dumbbell strength split with a
-3-month progressive-overload program, a guided timed session player, a
-sun-salutation warm-up, and an instructional video attached to every exercise.
+A full-stack tracker for a 4-day dumbbell strength split with a 3-month
+progressive-overload program, a guided timed session player, a sun-salutation
+warm-up, and an instructional video attached to every exercise.
 
-Single local user today; structured for a clean upgrade to multi-user / cloud
-(SQLite → PostgreSQL is a config flag, not a code change).
+**Multi-user** with isolated data: sign up with email/password or Google, and
+each account gets its own editable program, settings, and logged sessions.
+Every user's program is a clone of the seeded template that they can fully
+customise (add/edit/remove/reorder days & exercises). Mobile-friendly UI, and
+SQLite → PostgreSQL is a config flag, not a code change.
 
 ---
 
@@ -62,8 +65,9 @@ dotnet run
 ```
 
 - Runs on `http://localhost:5201` (and `https://localhost:7250`).
-- In **Development** it automatically applies migrations, seeds the 4-day split,
-  ensures a settings row (start date = today), and runs the video seeder.
+- In **Development** it automatically applies migrations, seeds the 4-day split
+  **template**, and runs the video seeder. Per-user settings and each user's own
+  editable copy of the program are created when they sign up.
 - Swagger UI: `http://localhost:5201/swagger`.
 - HTTPS redirection is **disabled in Development** so the Vite proxy can reach
   the API over plain HTTP.
@@ -199,11 +203,73 @@ compatibility.
 
 ---
 
+## Accounts & authentication
+
+Auth is JWT bearer tokens. Two ways in:
+
+- **Email + password** — passwords hashed with ASP.NET Core `PasswordHasher`
+  (PBKDF2). `POST /api/auth/register` and `POST /api/auth/login`.
+- **Google** — the SPA renders the Google Identity Services button; the backend
+  verifies the returned ID token (`Google.Apis.Auth`). Config-driven: set the
+  Google **Web Client ID** and it activates automatically (button appears,
+  `/api/auth/google` accepts tokens). No client id ⇒ Google is simply hidden and
+  email/password still works.
+
+On first sign-in a user is **provisioned**: the seeded template program
+(4 days / 24 exercises, `UserId == null`) is cloned into user-owned, editable
+rows, and a settings row is created. All data endpoints are `[Authorize]`d and
+scoped to the caller — users never see each other's data.
+
+The token is stored in `localStorage` and attached as `Authorization: Bearer`.
+A `401` on a protected endpoint clears it and drops back to the login screen.
+
+### Configuring Google sign-in
+
+1. In Google Cloud Console → *APIs & Services → Credentials*, create an
+   **OAuth 2.0 Client ID** of type *Web application*.
+2. Add your app origin to **Authorized JavaScript origins**
+   (`http://localhost:5173` for Vite dev, `http://localhost:8080` for the Docker
+   web container, plus your production origin).
+3. Provide the client id to the API:
+   ```bash
+   # env (works for dotnet run and docker)
+   Google__ClientId=xxxxxxxx.apps.googleusercontent.com
+   ```
+   or `appsettings`/`.env`. Nothing is hardcoded and no secret is committed.
+
+## Configure the workout
+
+The **Configure** page (`/settings`) is a full editor:
+
+- Program settings: start date, weekly target.
+- Per day: rename, edit focus, delete, reorder.
+- Per exercise: name, target text, rep range, base sets, cue, attached video
+  (from the shared library), delete, reorder.
+
+Every change is user-scoped and immediately reflected on the dashboard/session
+player.
+
 ## API surface
 
 ```
-GET    /api/workout-days                 all days with nested exercises + video refs
+POST   /api/auth/register                create an account (email + password)  -> token
+POST   /api/auth/login                   sign in                               -> token
+POST   /api/auth/google                  verify a Google ID token / link/create-> token
+GET    /api/auth/me                      current user (authorized)
+GET    /api/auth/config                  which providers are enabled (public)
+
+GET    /api/workout-days                 caller's days with nested exercises + video refs
 GET    /api/workout-days/{id}            single day
+POST   /api/workout-days                 create a day
+PUT    /api/workout-days/{id}            rename / edit focus
+DELETE /api/workout-days/{id}            delete a day (blocked if it has logged sessions)
+POST   /api/workout-days/reorder         reorder days by id
+POST   /api/workout-days/{id}/exercises              add an exercise
+PUT    /api/workout-days/{id}/exercises/{exId}       edit an exercise
+DELETE /api/workout-days/{id}/exercises/{exId}       remove an exercise
+POST   /api/workout-days/{id}/exercises/reorder      reorder a day's exercises
+GET    /api/videos                       shared instructional-video library (for the picker)
+
 GET    /api/program/phase-today          current phase number + parameters
 GET    /api/program/warmup               warm-up parameters
 GET    /api/sessions?from=&to=           session history (date range optional)
@@ -213,3 +279,25 @@ DELETE /api/sessions/{id}                delete a logged session
 GET    /api/stats/summary                totals, this week/month, streak, avg/week, per-day counts
 GET    /api/settings  ·  PUT /api/settings   program start date + weekly target
 ```
+
+_All endpoints except `/api/auth/*` (register/login/google/config) require a bearer token._
+
+## Docker (full stack)
+
+```bash
+docker compose up --build
+#   web -> http://localhost:8080   SPA + /api reverse proxy (nginx)
+#   api -> http://localhost:5201   Swagger at /swagger
+```
+
+- `web` builds the Vite SPA and serves it with nginx, which proxies `/api` to
+  the `api` container (same browser origin, so no CORS).
+- `api` runs the ASP.NET Core app (SQLite persisted in the `ironandbreath-data`
+  volume; migrates + seeds on start).
+- Set a real `JWT_KEY` (≥ 32 bytes) and optional `GOOGLE_CLIENT_ID` via env or a
+  `.env` file next to `docker-compose.yml`:
+  ```env
+  JWT_KEY=please-change-this-to-a-long-random-string-min-32-bytes
+  GOOGLE_CLIENT_ID=xxxxxxxx.apps.googleusercontent.com
+  ```
+- Postgres is available under a profile: `docker compose --profile postgres up -d postgres`.

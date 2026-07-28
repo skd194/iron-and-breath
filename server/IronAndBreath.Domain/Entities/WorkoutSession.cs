@@ -7,6 +7,10 @@ public class WorkoutSession
 {
     public int Id { get; set; }
 
+    /// <summary>Owning user.</summary>
+    public int UserId { get; set; }
+    public User? User { get; set; }
+
     public int WorkoutDayId { get; set; }
     public WorkoutDay? WorkoutDay { get; set; }
 

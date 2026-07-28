@@ -1,7 +1,9 @@
+using IronAndBreath.Api.Auth;
 using IronAndBreath.Api.Dtos;
 using IronAndBreath.Api.Services;
 using IronAndBreath.Domain.Progression;
 using IronAndBreath.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -9,16 +11,19 @@ using Microsoft.Extensions.Options;
 namespace IronAndBreath.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/program")]
 public class ProgramController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly WarmUpOptions _warmUp;
+    private readonly ICurrentUser _me;
 
-    public ProgramController(AppDbContext db, IOptions<WarmUpOptions> warmUp)
+    public ProgramController(AppDbContext db, IOptions<WarmUpOptions> warmUp, ICurrentUser me)
     {
         _db = db;
         _warmUp = warmUp.Value;
+        _me = me;
     }
 
     /// <summary>Warm-up parameters (Surya Namaskar rounds and timings).</summary>
@@ -30,7 +35,7 @@ public class ProgramController : ControllerBase
     [HttpGet("phase-today")]
     public async Task<ActionResult<PhaseTodayDto>> GetPhaseToday(CancellationToken ct)
     {
-        var settings = await _db.UserProgramSettings.AsNoTracking().FirstOrDefaultAsync(ct);
+        var settings = await _db.UserProgramSettings.AsNoTracking().FirstOrDefaultAsync(s => s.UserId == _me.Id, ct);
         var startDate = settings?.ProgramStartDate ?? DateOnly.FromDateTime(DateTime.Today);
 
         var phases = await _db.ProgramProgressionPhases.AsNoTracking().ToListAsync(ct);

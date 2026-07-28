@@ -84,3 +84,63 @@ export interface UpdateSessionRequest {
   date: string
   completedAt: string | null
 }
+
+// ---- Auth ----
+
+export interface UserDto {
+  id: number
+  email: string
+  displayName: string
+  hasPassword: boolean
+  googleLinked: boolean
+}
+
+export interface AuthResponse {
+  token: string
+  expiresAt: string
+  user: UserDto
+}
+
+export interface AuthConfigDto {
+  googleEnabled: boolean
+  googleClientId: string | null
+}
+
+export interface RegisterRequest {
+  email: string
+  password: string
+  displayName?: string
+}
+
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+// ---- Workout configuration (full CRUD) ----
+
+export interface CreateWorkoutDayRequest {
+  name: string
+  focus?: string
+}
+
+export interface UpdateWorkoutDayRequest {
+  name: string
+  focus?: string
+}
+
+export interface UpsertExerciseRequest {
+  name: string
+  repsDisplay?: string
+  targetRepsLow: number | null
+  targetRepsHigh: number | null
+  baseSets: number
+  cue?: string | null
+  videoId: number | null
+}
+
+export interface VideoLibraryItemDto {
+  id: number
+  title: string
+  video: VideoDto
+}

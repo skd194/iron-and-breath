@@ -1,0 +1,179 @@
+.config {
+  gap: var(--sp-5);
+}
+
+.page-title {
+  font-size: 26px;
+  margin-bottom: var(--sp-1);
+}
+
+.config-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.config-settings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+  align-items: end;
+}
+.config-settings-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.config-day {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.config-day-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.config-day-name {
+  font-size: 18px;
+}
+.config-day-focus {
+  font-size: 13px;
+  margin-top: 2px;
+}
+.config-day-tools,
+.config-exercise-tools,
+.config-inline-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+.config-day-edit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  width: 100%;
+}
+
+.config-inline-input {
+  background: var(--iron-800);
+  border: 1px solid var(--iron-700);
+  border-radius: var(--r-sm);
+  color: var(--text-strong);
+  padding: var(--sp-2) var(--sp-3);
+  font-family: inherit;
+  font-size: 15px;
+}
+.config-inline-input:focus {
+  outline: none;
+  border-color: var(--breath-600);
+}
+
+.config-exercises {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.config-exercise {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  background: var(--iron-900);
+  border: 1px solid var(--iron-800);
+}
+.config-exercise-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.config-exercise-name {
+  color: var(--text-strong);
+  font-weight: 550;
+  font-size: 15px;
+}
+.config-exercise-meta {
+  font-size: 12px;
+}
+
+.config-add-ex {
+  align-self: flex-start;
+}
+
+.config-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--sp-3);
+}
+
+.icon-btn {
+  background: var(--iron-800);
+  border: 1px solid var(--iron-700);
+  color: var(--text);
+  border-radius: var(--r-sm);
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  line-height: 1;
+}
+.icon-btn:hover:not(:disabled) {
+  background: var(--iron-700);
+}
+.icon-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+/* Modal fields should size like the rest of the form controls. */
+.modal .field input[type='text'],
+.modal .field input[type='number'],
+.modal .field input:not([type]),
+.modal .field select {
+  background: var(--iron-800);
+  border: 1px solid var(--iron-700);
+  border-radius: var(--r-sm);
+  color: var(--text-strong);
+  padding: var(--sp-2) var(--sp-3);
+  font-family: inherit;
+  font-size: 16px;
+}
+.modal .field input:focus,
+.modal .field select:focus {
+  outline: none;
+  border-color: var(--breath-600);
+}
+
+@media (max-width: 640px) {
+  .config-settings {
+    grid-template-columns: 1fr;
+  }
+  .config-day-head {
+    flex-direction: column;
+  }
+  .config-exercise {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-2);
+  }
+  .config-exercise-tools {
+    align-self: stretch;
+  }
+}

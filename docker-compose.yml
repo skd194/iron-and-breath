@@ -1,15 +1,54 @@
-# Optional: PostgreSQL for the SQLite -> Postgres cutover.
-# SQLite (the default dev database) needs no container.
+# Full Iron & Breath stack.
 #
-#   docker compose up -d postgres
+#   docker compose up --build
+#     web  -> http://localhost:8080   (SPA + /api reverse proxy)
+#     api  -> http://localhost:5201   (Swagger at /swagger)
 #
-# Then point the API at it:
-#   Database__Provider=Postgres
-#   Database__ConnectionString=Host=localhost;Database=ironandbreath;Username=postgres;Password=postgres
+# The default database is SQLite, persisted in the `ironandbreath-data` volume,
+# so no database container is required. Postgres is available under a profile
+# for the cutover (see README):  docker compose --profile postgres up -d postgres
+#
+# Google sign-in activates when you provide GOOGLE_CLIENT_ID (env or .env file).
+# JWT_KEY should be a long random string in any real deployment.
 services:
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: ironandbreath-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Database__Provider: Sqlite
+      Database__ConnectionString: Data Source=data/ironandbreath.db
+      Jwt__Issuer: iron-and-breath
+      Jwt__Audience: iron-and-breath
+      Jwt__Key: ${JWT_KEY:-dev-only-insecure-key-change-me-please-0123456789abcdef}
+      Jwt__ExpiryMinutes: "43200"
+      Google__ClientId: ${GOOGLE_CLIENT_ID:-}
+    volumes:
+      - ironandbreath-data:/app/data
+    ports:
+      - "5201:8080"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: ironandbreath-web
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+  # Optional: PostgreSQL for the SQLite -> Postgres cutover.
+  #   docker compose --profile postgres up -d postgres
   postgres:
     image: postgres:16-alpine
     container_name: ironandbreath-postgres
+    profiles: ["postgres"]
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -25,4 +64,5 @@ services:
       retries: 5
 
 volumes:
+  ironandbreath-data:
   ironandbreath-pgdata:

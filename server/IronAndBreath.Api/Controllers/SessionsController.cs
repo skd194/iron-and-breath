@@ -1,21 +1,26 @@
+using IronAndBreath.Api.Auth;
 using IronAndBreath.Api.Dtos;
 using IronAndBreath.Domain.Entities;
 using IronAndBreath.Domain.Progression;
 using IronAndBreath.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace IronAndBreath.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/sessions")]
 public class SessionsController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly ICurrentUser _me;
 
-    public SessionsController(AppDbContext db)
+    public SessionsController(AppDbContext db, ICurrentUser me)
     {
         _db = db;
+        _me = me;
     }
 
     /// <summary>Session history, optionally filtered by an inclusive date range.</summary>
@@ -25,7 +30,10 @@ public class SessionsController : ControllerBase
         [FromQuery] DateOnly? to,
         CancellationToken ct)
     {
-        var query = _db.WorkoutSessions.AsNoTracking().Include(s => s.WorkoutDay).AsQueryable();
+        var query = _db.WorkoutSessions.AsNoTracking()
+            .Where(s => s.UserId == _me.Id)
+            .Include(s => s.WorkoutDay)
+            .AsQueryable();
 
         if (from is not null)
         {
@@ -52,7 +60,7 @@ public class SessionsController : ControllerBase
     {
         var session = await _db.WorkoutSessions.AsNoTracking()
             .Include(s => s.WorkoutDay)
-            .FirstOrDefaultAsync(s => s.Id == id, ct);
+            .FirstOrDefaultAsync(s => s.Id == id && s.UserId == _me.Id, ct);
 
         return session is null ? NotFound() : Ok(ToDto(session));
     }
@@ -61,7 +69,7 @@ public class SessionsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<SessionDto>> Create(CreateSessionRequest request, CancellationToken ct)
     {
-        if (!await _db.WorkoutDays.AnyAsync(d => d.Id == request.WorkoutDayId, ct))
+        if (!await _db.WorkoutDays.AnyAsync(d => d.Id == request.WorkoutDayId && d.UserId == _me.Id, ct))
         {
             return ValidationProblem($"Workout day {request.WorkoutDayId} does not exist.");
         }
@@ -70,6 +78,7 @@ public class SessionsController : ControllerBase
 
         var session = new WorkoutSession
         {
+            UserId = _me.Id,
             WorkoutDayId = request.WorkoutDayId,
             Date = request.Date,
             PhaseNumberAtCompletion = phase,
@@ -90,13 +99,14 @@ public class SessionsController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<ActionResult<SessionDto>> Update(int id, UpdateSessionRequest request, CancellationToken ct)
     {
-        var session = await _db.WorkoutSessions.Include(s => s.WorkoutDay).FirstOrDefaultAsync(s => s.Id == id, ct);
+        var session = await _db.WorkoutSessions.Include(s => s.WorkoutDay)
+            .FirstOrDefaultAsync(s => s.Id == id && s.UserId == _me.Id, ct);
         if (session is null)
         {
             return NotFound();
         }
 
-        if (!await _db.WorkoutDays.AnyAsync(d => d.Id == request.WorkoutDayId, ct))
+        if (!await _db.WorkoutDays.AnyAsync(d => d.Id == request.WorkoutDayId && d.UserId == _me.Id, ct))
         {
             return ValidationProblem($"Workout day {request.WorkoutDayId} does not exist.");
         }
@@ -115,7 +125,7 @@ public class SessionsController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        var session = await _db.WorkoutSessions.FindAsync([id], ct);
+        var session = await _db.WorkoutSessions.FirstOrDefaultAsync(s => s.Id == id && s.UserId == _me.Id, ct);
         if (session is null)
         {
             return NotFound();
@@ -128,7 +138,7 @@ public class SessionsController : ControllerBase
 
     private async Task<int> ResolvePhaseForDateAsync(DateOnly date, CancellationToken ct)
     {
-        var settings = await _db.UserProgramSettings.AsNoTracking().FirstOrDefaultAsync(ct);
+        var settings = await _db.UserProgramSettings.AsNoTracking().FirstOrDefaultAsync(s => s.UserId == _me.Id, ct);
         var startDate = settings?.ProgramStartDate ?? DateOnly.FromDateTime(DateTime.Today);
         var phases = await _db.ProgramProgressionPhases.AsNoTracking().ToListAsync(ct);
         return ProgressionCalculator.ResolvePhase(startDate, date, phases).PhaseNumber;

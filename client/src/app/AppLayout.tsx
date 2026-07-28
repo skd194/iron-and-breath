@@ -1,6 +1,11 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { useAuth } from '../features/auth/AuthContext'
 
 export function AppLayout() {
+  const { user, logout } = useAuth()
+
+  const initial = (user?.displayName || user?.email || '?').charAt(0).toUpperCase()
+
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -13,7 +18,19 @@ export function AppLayout() {
               Dashboard
             </NavLink>
             <NavLink to="/history">History</NavLink>
+            <NavLink to="/settings">Configure</NavLink>
           </nav>
+          <div className="user-menu">
+            <span className="user-chip" title={user?.email}>
+              <span className="user-avatar" aria-hidden>
+                {initial}
+              </span>
+              <span className="user-name">{user?.displayName || user?.email}</span>
+            </span>
+            <button className="btn btn-ghost btn-sm" onClick={logout}>
+              Sign out
+            </button>
+          </div>
         </div>
       </header>
       <main>

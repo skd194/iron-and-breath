@@ -1,5 +1,7 @@
 // Tiny typed fetch wrapper. Base URL defaults to '' so requests hit the Vite
 // dev proxy (/api -> API). Override with VITE_API_BASE for a deployed API.
+import { getToken, setToken } from './token'
+
 const BASE = import.meta.env.VITE_API_BASE ?? ''
 
 export class ApiError extends Error {
@@ -15,12 +17,22 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = getToken()
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(init?.headers ?? {}),
+    },
     ...init,
   })
 
   if (!res.ok) {
+    // An expired/invalid session on a protected endpoint: clear the token so the
+    // app falls back to the login screen. Auth endpoints handle their own 401s.
+    if (res.status === 401 && !path.startsWith('/api/auth/')) {
+      setToken(null)
+    }
     let body: unknown
     try {
       body = await res.json()

@@ -90,6 +90,43 @@ button {
   color: var(--text-strong);
 }
 
+/* ---- User menu (top-right) ---- */
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--text-muted);
+  font-size: 14px;
+  max-width: 180px;
+}
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, var(--breath-500), var(--breath-600));
+  color: #05201c;
+  font-weight: 700;
+  font-size: 13px;
+  flex: none;
+}
+.user-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.btn-sm {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
 main {
   flex: 1;
   padding: var(--sp-6) 0 var(--sp-7);
@@ -227,4 +264,41 @@ main {
 .field select:focus {
   outline: none;
   border-color: var(--breath-600);
+}
+
+/* ---- Responsive / mobile ---- */
+@media (max-width: 720px) {
+  .container {
+    padding: 0 var(--sp-4);
+  }
+  .topbar-inner {
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    padding: var(--sp-3) 0;
+  }
+  .brand {
+    font-size: 16px;
+  }
+  .nav {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav a {
+    white-space: nowrap;
+  }
+  .user-menu {
+    margin-left: auto;
+  }
+  .user-name {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .btn-lg {
+    padding: var(--sp-3) var(--sp-4);
+    font-size: 15px;
+  }
 }
