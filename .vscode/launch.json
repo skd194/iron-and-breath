@@ -1,0 +1,48 @@
+{
+  // Debug configs for Iron & Breath. Requires the C# Dev Kit (or C#) extension
+  // for the API, and a Chromium browser for the client.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "API (.NET)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-api",
+      "program": "${workspaceFolder}/server/IronAndBreath.Api/bin/Debug/net8.0/IronAndBreath.Api.dll",
+      "cwd": "${workspaceFolder}/server/IronAndBreath.Api",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+        "uriFormat": "%s/swagger"
+      },
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "Client (Vite + Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "client-dev",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/client/src"
+    },
+    {
+      "name": "Client (Vite + Edge)",
+      "type": "msedge",
+      "request": "launch",
+      "preLaunchTask": "client-dev",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/client/src"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full stack (API + Client)",
+      "configurations": ["API (.NET)", "Client (Vite + Chrome)"],
+      "stopAll": true
+    }
+  ]
+}

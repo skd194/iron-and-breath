@@ -290,6 +290,36 @@ docker compose up --build
 #   api -> http://localhost:5201   Swagger at /swagger
 ```
 
+Or use a launcher (creates `.env` from `.env.example` on first run, then brings
+the stack up). **Docker** and **Podman** variants are provided — pick your engine:
+
+```
+# Docker
+docker-up.cmd            # Windows (double-click or run in a terminal)
+./docker-up.ps1          # PowerShell (add -d to detach)
+./docker-up.sh           # macOS / Linux / Git Bash
+
+# Podman (uses "podman compose", falls back to podman-compose)
+podman-up.cmd  ·  ./podman-up.ps1  ·  ./podman-up.sh
+```
+
+Stop with `docker-down.cmd` / `podman-down.cmd` (or `… compose down`; add `-v`
+to drop the data volume). Images are fully-qualified (`docker.io/library/…`,
+`mcr.microsoft.com/…`) so Podman's short-name resolution doesn't prompt.
+
+## Debugging in VS Code
+
+`.vscode/launch.json` + `tasks.json` are included:
+
+- **API (.NET)** — builds and launches the API, opens Swagger when it's ready
+  (needs the C# / C# Dev Kit extension).
+- **Client (Vite + Chrome / Edge)** — starts the dev server and opens a debug
+  browser.
+- **Full stack (API + Client)** — a compound that runs both.
+- Tasks: `build-api`, `client-dev`, `test`, and `podman-up`.
+
+Press **F5** and choose a configuration.
+
 - `web` builds the Vite SPA and serves it with nginx, which proxies `/api` to
   the `api` container (same browser origin, so no CORS).
 - `api` runs the ASP.NET Core app (SQLite persisted in the `ironandbreath-data`

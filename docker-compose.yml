@@ -46,7 +46,7 @@ services:
   # Optional: PostgreSQL for the SQLite -> Postgres cutover.
   #   docker compose --profile postgres up -d postgres
   postgres:
-    image: postgres:16-alpine
+    image: docker.io/library/postgres:16-alpine
     container_name: ironandbreath-postgres
     profiles: ["postgres"]
     environment:
