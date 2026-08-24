@@ -31,6 +31,92 @@ export function setsForExercise(baseSets: number, phase: PhaseTodayDto): number 
   return Math.max(1, baseSets + phase.setDelta)
 }
 
+export type AgendaGroupKind = 'warmup' | 'exercise'
+
+/** One collapsible block in the plan list: the warm-up, or a single exercise. */
+export interface AgendaGroup {
+  key: string
+  kind: AgendaGroupKind
+  title: string
+  /** Step index range this group spans (inclusive), for progress + jumping. */
+  startIndex: number
+  endIndex: number
+  totalSeconds: number
+  // Exercise context
+  reps?: string
+  cue?: string | null
+  sets?: number
+  workSeconds?: number
+  restSeconds?: number
+  // Warm-up context
+  rounds?: number
+  roundSeconds?: number
+  transitionSeconds?: number
+}
+
+/**
+ * Folds the flat step list into exercise-level groups (plus one warm-up group)
+ * so the plan can be shown as cards with reps/rest details instead of every
+ * individual timer step. Pure; derives all timing from the steps themselves.
+ */
+export function groupStepsForAgenda(steps: SessionStep[]): AgendaGroup[] {
+  const groups: AgendaGroup[] = []
+  let cur: AgendaGroup | null = null
+  let closed = false
+
+  for (let i = 0; i < steps.length; i++) {
+    const s = steps[i]
+    if (s.kind === 'warmup-round' || s.kind === 'warmup-transition') {
+      if (!cur || cur.kind !== 'warmup') {
+        cur = { key: `warmup-${i}`, kind: 'warmup', title: 'Warm-up', startIndex: i, endIndex: i, totalSeconds: 0 }
+        groups.push(cur)
+      }
+      cur.endIndex = i
+      cur.totalSeconds += s.durationSeconds
+      if (s.kind === 'warmup-round') {
+        cur.title = s.title
+        cur.rounds = (cur.rounds ?? 0) + 1
+        cur.roundSeconds = s.durationSeconds
+      } else {
+        cur.transitionSeconds = s.durationSeconds
+      }
+    } else if (s.kind === 'work') {
+      if (!cur || cur.kind !== 'exercise' || closed) {
+        cur = {
+          key: `ex-${i}`,
+          kind: 'exercise',
+          title: s.exerciseName ?? s.title,
+          startIndex: i,
+          endIndex: i,
+          totalSeconds: 0,
+          reps: s.repsDisplay,
+          cue: s.cue,
+          sets: s.totalSets,
+          workSeconds: s.durationSeconds,
+        }
+        groups.push(cur)
+        closed = false
+      }
+      cur.endIndex = i
+      cur.totalSeconds += s.durationSeconds
+    } else if (s.kind === 'rest-set') {
+      if (cur) {
+        cur.endIndex = i
+        cur.restSeconds = s.durationSeconds
+        cur.totalSeconds += s.durationSeconds
+      }
+    } else if (s.kind === 'rest-exercise') {
+      if (cur) {
+        cur.endIndex = i
+        cur.totalSeconds += s.durationSeconds
+        closed = true // trailing rest ends this exercise; next work starts a new group
+      }
+    }
+  }
+
+  return groups
+}
+
 /**
  * Builds the full scripted step sequence for a session: warm-up rounds, then
  * each exercise's work sets with rests between sets and between exercises.

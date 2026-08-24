@@ -6,13 +6,34 @@
 }
 
 .player {
-  max-width: 720px;
+  max-width: 1080px;
   margin: 0 auto;
   min-height: 100%;
   padding: var(--sp-5) var(--sp-5) var(--sp-7);
   display: flex;
   flex-direction: column;
   gap: var(--sp-4);
+}
+
+/* Timer/info column + workout-plan list side by side (stacks on mobile). */
+.player-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  gap: var(--sp-5);
+  align-items: start;
+}
+.player-col-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+.player-agenda {
+  position: sticky;
+  top: var(--sp-4);
+  max-height: calc(100vh - var(--sp-7));
+  display: flex;
+  min-height: 0;
 }
 
 .player-top {
@@ -184,6 +205,155 @@
   margin-top: auto;
 }
 
+/* Workout plan list */
+.agenda {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--iron-900);
+  border: 1px solid var(--iron-800);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.agenda-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--iron-800);
+}
+.agenda-title {
+  font-weight: 650;
+  color: var(--text-strong);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.agenda-sub {
+  font-size: 12px;
+  white-space: nowrap;
+}
+.agenda-list {
+  list-style: none;
+  margin: 0;
+  padding: var(--sp-2);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+/* One card per exercise (and the warm-up). Read-only: the session is worked
+   through in order, so cards are not interactive. */
+.agenda-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px solid var(--iron-800);
+  border-radius: var(--r-sm);
+  background: var(--iron-850);
+  color: var(--text);
+  text-align: left;
+  transition: background 0.12s ease, border-color 0.12s ease, opacity 0.12s ease;
+}
+
+.agenda-card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.agenda-marker {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1.5px solid var(--iron-700);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1;
+  color: var(--text-faint);
+}
+.agenda-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agenda-total {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+/* Detail chips: sets / reps / work / rest. */
+.agenda-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-left: calc(20px + var(--sp-2));
+}
+.agenda-chip {
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 1px 7px;
+  border-radius: var(--r-pill);
+  background: var(--iron-800);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.agenda-chip.reps {
+  background: rgba(45, 212, 191, 0.14);
+  color: var(--breath-400);
+}
+
+.agenda-live,
+.agenda-cue {
+  padding-left: calc(20px + var(--sp-2));
+  font-size: 12px;
+}
+.agenda-live {
+  color: var(--accent, var(--breath-400));
+  font-weight: 600;
+}
+.agenda-cue {
+  color: var(--text-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Done: checked off and dimmed. */
+.agenda-card.done {
+  opacity: 0.5;
+}
+.agenda-card.done .agenda-marker {
+  border-color: var(--accent, var(--breath-500));
+  color: var(--accent, var(--breath-500));
+}
+
+/* Current: highlighted with the step's accent. */
+.agenda-card.current {
+  background: color-mix(in srgb, var(--accent, var(--breath-500)) 15%, var(--iron-850));
+  border-color: color-mix(in srgb, var(--accent, var(--breath-500)) 55%, transparent);
+}
+.agenda-card.current .agenda-marker {
+  border-color: var(--accent, var(--breath-500));
+  color: var(--accent, var(--breath-500));
+}
+.agenda-card.current .agenda-name {
+  color: var(--text-strong);
+}
+
 .paused-veil {
   position: fixed;
   top: var(--sp-6);
@@ -247,6 +417,20 @@
   color: var(--breath-400);
   text-decoration: underline;
   padding: 0;
+}
+
+/* Below this width the plan drops beneath the timer so you scroll down to it. */
+@media (max-width: 920px) {
+  .player-body {
+    grid-template-columns: 1fr;
+  }
+  .player-agenda {
+    position: static;
+    max-height: none;
+  }
+  .agenda-list {
+    max-height: 60vh;
+  }
 }
 
 @media (max-width: 520px) {

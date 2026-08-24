@@ -4,6 +4,7 @@ import { useCreateSession } from '../../shared/api/hooks'
 import { ProgressRing } from '../../shared/ui/ProgressRing'
 import { todayIso } from '../../shared/util/date'
 import { cueComplete, cueTransition, unlockAudio } from './audio'
+import { SessionAgenda } from './components/SessionAgenda'
 import { VideoEmbed } from './components/VideoEmbed'
 import type { SessionStep } from './session-plan'
 import { useSessionRunner } from './useSessionRunner'
@@ -147,37 +148,45 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
         ))}
       </div>
 
-      {/* Main */}
-      <div className={`player-main${step.isRest ? ' rest' : ''}`}>
-        <div className="player-ring">
-          <ProgressRing progress={progress} size={280} stroke={16} color={accent}>
-            <div className="timer-value mono">{formatTime(runner.remainingMs)}</div>
-            <div className="timer-kind">{labelForKind(step.kind)}</div>
-          </ProgressRing>
+      {/* Body: timer + info on the left, full plan list on the right (below on mobile) */}
+      <div className="player-body">
+        <div className="player-col-main">
+          <div className={`player-main${step.isRest ? ' rest' : ''}`}>
+            <div className="player-ring">
+              <ProgressRing progress={progress} size={280} stroke={16} color={accent}>
+                <div className="timer-value mono">{formatTime(runner.remainingMs)}</div>
+                <div className="timer-kind">{labelForKind(step.kind)}</div>
+              </ProgressRing>
+            </div>
+
+            <div className="player-info">
+              <h1 className="player-title">{step.title}</h1>
+              {step.subtitle && <p className="player-subtitle">{step.subtitle}</p>}
+              {isWork && step.repsDisplay && (
+                <div className="player-reps">{step.repsDisplay}</div>
+              )}
+              {isWork && step.cue && <p className="player-cue">💡 {step.cue}</p>}
+              {isWork && <VideoEmbed video={step.video} />}
+            </div>
+          </div>
+
+          {/* Controls */}
+          <div className="player-controls">
+            <button className="btn btn-ghost" onClick={runner.restartStep} title="Restart this step">
+              ↺ Restart
+            </button>
+            <button className="btn btn-primary btn-lg" onClick={runner.togglePause}>
+              {paused ? '▶ Resume' : '⏸ Pause'}
+            </button>
+            <button className="btn btn-ghost" onClick={runner.skip} title="Skip to next step">
+              Skip ⏭
+            </button>
+          </div>
         </div>
 
-        <div className="player-info">
-          <h1 className="player-title">{step.title}</h1>
-          {step.subtitle && <p className="player-subtitle">{step.subtitle}</p>}
-          {isWork && step.repsDisplay && (
-            <div className="player-reps">{step.repsDisplay}</div>
-          )}
-          {isWork && step.cue && <p className="player-cue">💡 {step.cue}</p>}
-          {isWork && <VideoEmbed video={step.video} />}
-        </div>
-      </div>
-
-      {/* Controls */}
-      <div className="player-controls">
-        <button className="btn btn-ghost" onClick={runner.restartStep} title="Restart this step">
-          ↺ Restart
-        </button>
-        <button className="btn btn-primary btn-lg" onClick={runner.togglePause}>
-          {paused ? '▶ Resume' : '⏸ Pause'}
-        </button>
-        <button className="btn btn-ghost" onClick={runner.skip} title="Skip to next step">
-          Skip ⏭
-        </button>
+        <aside className="player-agenda">
+          <SessionAgenda steps={steps} currentIndex={runner.index} />
+        </aside>
       </div>
 
       {paused && <div className="paused-veil">Paused</div>}

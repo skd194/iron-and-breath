@@ -1,8 +1,37 @@
 {
-  // Debug configs for Iron & Breath. Requires the C# Dev Kit (or C#) extension
-  // for the API, and a Chromium browser for the client.
+  // Debug configs for Iron & Breath.
+  //
+  // Easiest: pick "Run app + API" in the Run and Debug dropdown and press F5.
+  // It starts BOTH the API (:5201) and the client (:5173) in terminals and
+  // opens the app - no extra extensions needed (uses the built-in JS-debug
+  // terminal runner). Ctrl+C / stop button stops both.
+  //
+  // For breakpoint debugging use "Full stack (API + Client)" instead - that
+  // one needs the C# Dev Kit (or C#) extension and a Chromium browser.
   "version": "0.2.0",
   "configurations": [
+    {
+      // "Just run it" - starts the API in a terminal. No C# Dev Kit required.
+      "name": "Run: API",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "dotnet run",
+      "cwd": "${workspaceFolder}/server/IronAndBreath.Api",
+      "env": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    },
+    {
+      // "Just run it" - starts the Vite client in a terminal, opens the browser.
+      "name": "Run: Client",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev",
+      "cwd": "${workspaceFolder}/client",
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Local:\\s+(https?://\\S+)",
+        "uriFormat": "%s"
+      }
+    },
     {
       "name": "API (.NET)",
       "type": "coreclr",
@@ -40,6 +69,13 @@
   ],
   "compounds": [
     {
+      // Default one-click run: both servers, no debug extensions needed.
+      "name": "Run app + API",
+      "configurations": ["Run: API", "Run: Client"],
+      "stopAll": true
+    },
+    {
+      // Full breakpoint debugging (needs C# Dev Kit + Chromium).
       "name": "Full stack (API + Client)",
       "configurations": ["API (.NET)", "Client (Vite + Chrome)"],
       "stopAll": true
