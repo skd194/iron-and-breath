@@ -46,6 +46,20 @@ public class MigrationAndSeedTests : IDisposable
     }
 
     [Fact]
+    public void Seeded_exercises_carry_coaching_metadata()
+    {
+        // Dynamic lifts get breathing cues + muscles; holds get a breathing note.
+        var bench = _db.Exercises.Single(e => e.Id == 1);
+        bench.PrimaryMuscles.Should().Contain("Chest");
+        bench.BreathingConcentric.Should().Be("Exhale");
+        bench.BreathingEccentric.Should().Be("Inhale");
+
+        var plank = _db.Exercises.Single(e => e.Name == "Plank Hold");
+        plank.BreathingConcentric.Should().BeNull();
+        plank.BreathingNotes.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
     public void Phases_cover_weeks_one_through_twelve_without_gaps()
     {
         var phases = _db.ProgramProgressionPhases.OrderBy(p => p.WeekStart).ToList();

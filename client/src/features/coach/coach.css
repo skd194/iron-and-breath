@@ -1,0 +1,119 @@
+.coach {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  height: calc(100dvh - 140px);
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.coach-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.coach-head h1 {
+  margin-bottom: 2px;
+}
+.coach-provider {
+  font-size: 12px;
+}
+
+/* Scrolling message thread */
+.coach-thread {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  background: var(--iron-900);
+  border: 1px solid var(--iron-800);
+  border-radius: var(--r-md);
+}
+
+.coach-msg {
+  display: flex;
+}
+.coach-msg.user {
+  justify-content: flex-end;
+}
+.coach-bubble {
+  max-width: 78%;
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.coach-msg.user .coach-bubble {
+  background: color-mix(in srgb, var(--breath-500) 22%, var(--iron-850));
+  color: var(--text-strong);
+  border-bottom-right-radius: var(--r-sm);
+}
+.coach-msg.assistant .coach-bubble {
+  background: var(--iron-850);
+  border: 1px solid var(--iron-800);
+  color: var(--text);
+  border-bottom-left-radius: var(--r-sm);
+}
+.coach-typing {
+  letter-spacing: 2px;
+  color: var(--text-faint);
+  animation: coach-pulse 1.2s ease-in-out infinite;
+}
+@keyframes coach-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* Welcome / empty state */
+.coach-welcome {
+  margin: auto;
+  text-align: center;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.coach-welcome-icon {
+  font-size: 40px;
+}
+.coach-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  width: 100%;
+}
+.coach-suggestion {
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  border: 1px solid var(--iron-800);
+  background: var(--iron-850);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.coach-suggestion:hover {
+  border-color: var(--breath-500);
+  background: var(--iron-800);
+}
+
+.coach-error {
+  margin: 0;
+}
+
+/* Composer */
+.coach-input {
+  display: flex;
+  gap: var(--sp-2);
+}
+.coach-input input {
+  flex: 1 1 auto;
+  font-size: 16px;
+}

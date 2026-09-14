@@ -25,6 +25,18 @@ export function ExerciseModal({ dayId, exercise, videos, onClose }: Props) {
   const [videoId, setVideoId] = useState<string>(
     exercise?.video ? matchVideoId(exercise, videos)?.toString() ?? '' : '',
   )
+
+  // Coaching metadata (drives the interactive workout + rest screens).
+  const [breathIn, setBreathIn] = useState(exercise?.breathing?.concentric ?? '')
+  const [breathOut, setBreathOut] = useState(exercise?.breathing?.eccentric ?? '')
+  const [breathNotes, setBreathNotes] = useState(exercise?.breathing?.notes ?? '')
+  const [primaryMuscles, setPrimaryMuscles] = useState((exercise?.primaryMuscles ?? []).join(', '))
+  const [secondaryMuscles, setSecondaryMuscles] = useState((exercise?.secondaryMuscles ?? []).join(', '))
+  const [tempo, setTempo] = useState(exercise?.tempo ?? '')
+  const [benefits, setBenefits] = useState(exercise?.benefits ?? '')
+  const [commonMistakes, setCommonMistakes] = useState(exercise?.commonMistakes ?? '')
+  const [safetyTips, setSafetyTips] = useState(exercise?.safetyTips ?? '')
+
   const [error, setError] = useState<string | null>(null)
 
   const busy = create.isPending || update.isPending
@@ -40,6 +52,15 @@ export function ExerciseModal({ dayId, exercise, videos, onClose }: Props) {
       baseSets: Number(baseSets) || 1,
       cue: cue.trim() || null,
       videoId: videoId ? Number(videoId) : null,
+      breathingConcentric: breathIn.trim() || null,
+      breathingEccentric: breathOut.trim() || null,
+      breathingNotes: breathNotes.trim() || null,
+      primaryMuscles: splitMuscles(primaryMuscles),
+      secondaryMuscles: splitMuscles(secondaryMuscles),
+      tempo: tempo.trim() || null,
+      benefits: benefits.trim() || null,
+      commonMistakes: commonMistakes.trim() || null,
+      safetyTips: safetyTips.trim() || null,
     }
     try {
       if (isEdit && exercise) {
@@ -107,6 +128,51 @@ export function ExerciseModal({ dayId, exercise, videos, onClose }: Props) {
           </select>
         </label>
 
+        <details className="config-details">
+          <summary>Coaching details (breathing, muscles, tips)</summary>
+
+          <div className="config-row-3">
+            <label className="field">
+              Breathe out (exertion)
+              <input value={breathIn} onChange={(e) => setBreathIn(e.target.value)} placeholder="Exhale" />
+            </label>
+            <label className="field">
+              Breathe in (return)
+              <input value={breathOut} onChange={(e) => setBreathOut(e.target.value)} placeholder="Inhale" />
+            </label>
+            <label className="field">
+              Breathing note
+              <input value={breathNotes} onChange={(e) => setBreathNotes(e.target.value)} placeholder="For holds" />
+            </label>
+          </div>
+
+          <label className="field">
+            Primary muscles <span className="muted">(comma-separated)</span>
+            <input value={primaryMuscles} onChange={(e) => setPrimaryMuscles(e.target.value)} placeholder="Chest, Triceps" />
+          </label>
+          <label className="field">
+            Secondary muscles <span className="muted">(comma-separated)</span>
+            <input value={secondaryMuscles} onChange={(e) => setSecondaryMuscles(e.target.value)} placeholder="Shoulders" />
+          </label>
+
+          <label className="field">
+            Tempo
+            <input value={tempo} onChange={(e) => setTempo(e.target.value)} placeholder="2-0-2" />
+          </label>
+          <label className="field">
+            Benefits
+            <input value={benefits} onChange={(e) => setBenefits(e.target.value)} />
+          </label>
+          <label className="field">
+            Common mistakes
+            <input value={commonMistakes} onChange={(e) => setCommonMistakes(e.target.value)} />
+          </label>
+          <label className="field">
+            Safety tips
+            <input value={safetyTips} onChange={(e) => setSafetyTips(e.target.value)} />
+          </label>
+        </details>
+
         {error && <div className="auth-error">{error}</div>}
 
         <div className="modal-actions">
@@ -126,4 +192,12 @@ export function ExerciseModal({ dayId, exercise, videos, onClose }: Props) {
 function matchVideoId(exercise: ExerciseDto, videos: VideoLibraryItemDto[]): number | undefined {
   if (!exercise.video) return undefined
   return videos.find((v) => v.video.embedUrl === exercise.video!.embedUrl)?.id
+}
+
+/** Splits a comma-separated muscle input into a clean array. */
+function splitMuscles(value: string): string[] {
+  return value
+    .split(',')
+    .map((m) => m.trim())
+    .filter(Boolean)
 }

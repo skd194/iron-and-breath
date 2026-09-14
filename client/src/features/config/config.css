@@ -2,6 +2,27 @@
   gap: var(--sp-5);
 }
 
+/* Collapsible coaching-metadata section in the exercise modal. */
+.config-details {
+  border: 1px solid var(--iron-800);
+  border-radius: var(--r-sm);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--iron-900);
+}
+.config-details summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-muted);
+  user-select: none;
+}
+.config-details[open] summary {
+  margin-bottom: var(--sp-3);
+  color: var(--text);
+}
+.config-details .field {
+  margin-top: var(--sp-2);
+}
+
 .page-title {
   font-size: 26px;
   margin-bottom: var(--sp-1);

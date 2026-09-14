@@ -8,6 +8,9 @@ public record VideoDto(
     int? DurationSeconds,
     string? Attribution);
 
+/// <summary>Breathing cues for the concentric/eccentric phases (null when not configured).</summary>
+public record BreathingDto(string? Concentric, string? Eccentric, string? Notes);
+
 public record ExerciseDto(
     int Id,
     string Name,
@@ -17,7 +20,15 @@ public record ExerciseDto(
     string? Cue,
     int BaseSets,
     int SortOrder,
-    VideoDto? Video);
+    VideoDto? Video,
+    IReadOnlyList<string> PrimaryMuscles,
+    IReadOnlyList<string> SecondaryMuscles,
+    BreathingDto? Breathing,
+    string? Tempo,
+    string? Benefits,
+    string? CommonMistakes,
+    string? SafetyTips,
+    string? AnimationRef);
 
 public record WorkoutDayDto(
     int Id,

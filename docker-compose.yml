@@ -26,6 +26,8 @@ services:
       Jwt__Key: ${JWT_KEY:-dev-only-insecure-key-change-me-please-0123456789abcdef}
       Jwt__ExpiryMinutes: "43200"
       Google__ClientId: ${GOOGLE_CLIENT_ID:-}
+      # AI coach: empty falls back to the offline demo coach.
+      CLAUDE_API_KEY: ${CLAUDE_API_KEY:-}
     volumes:
       - ironandbreath-data:/app/data
     ports:

@@ -3,6 +3,7 @@ using System;
 using IronAndBreath.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,61 +11,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IronAndBreath.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260914113524_AddSessionLoggingAndSource")]
+    partial class AddSessionLoggingAndSource
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
-
-            modelBuilder.Entity("IronAndBreath.Domain.Entities.ChatMessage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(8000)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("ConversationId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ConversationId");
-
-                    b.ToTable("ChatMessages");
-                });
-
-            modelBuilder.Entity("IronAndBreath.Domain.Entities.Conversation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Conversations");
-                });
 
             modelBuilder.Entity("IronAndBreath.Domain.Entities.Exercise", b =>
                 {
@@ -864,28 +818,6 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                     b.ToTable("WorkoutSessions");
                 });
 
-            modelBuilder.Entity("IronAndBreath.Domain.Entities.ChatMessage", b =>
-                {
-                    b.HasOne("IronAndBreath.Domain.Entities.Conversation", "Conversation")
-                        .WithMany("Messages")
-                        .HasForeignKey("ConversationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Conversation");
-                });
-
-            modelBuilder.Entity("IronAndBreath.Domain.Entities.Conversation", b =>
-                {
-                    b.HasOne("IronAndBreath.Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("IronAndBreath.Domain.Entities.Exercise", b =>
                 {
                     b.HasOne("IronAndBreath.Domain.Entities.ExerciseVideo", "Video")
@@ -959,11 +891,6 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
 
                     b.Navigation("WorkoutDay");
-                });
-
-            modelBuilder.Entity("IronAndBreath.Domain.Entities.Conversation", b =>
-                {
-                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("IronAndBreath.Domain.Entities.ExerciseVideo", b =>

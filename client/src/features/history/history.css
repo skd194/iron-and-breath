@@ -7,6 +7,33 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  gap: var(--sp-3);
+}
+.history-head-right {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.session-sets {
+  font-size: 13px;
+}
+.session-sets summary {
+  cursor: pointer;
+  color: var(--text-muted);
+}
+.session-sets ul {
+  margin: var(--sp-2) 0 0;
+  padding-left: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--text-muted);
+}
+.session-notes {
+  margin: 0;
+  font-size: 13px;
+  font-style: italic;
 }
 
 .session-list {

@@ -31,5 +31,24 @@ public static class DtoMappers
             exercise.Cue,
             exercise.BaseSets,
             exercise.SortOrder,
-            exercise.Video is null ? null : videos.Resolve(exercise.Video));
+            exercise.Video is null ? null : videos.Resolve(exercise.Video),
+            SplitMuscles(exercise.PrimaryMuscles),
+            SplitMuscles(exercise.SecondaryMuscles),
+            ToBreathing(exercise),
+            exercise.Tempo,
+            exercise.Benefits,
+            exercise.CommonMistakes,
+            exercise.SafetyTips,
+            exercise.AnimationRef);
+
+    /// <summary>Splits the comma-separated muscle storage into a trimmed list (empty when null).</summary>
+    private static IReadOnlyList<string> SplitMuscles(string? csv)
+        => string.IsNullOrWhiteSpace(csv)
+            ? Array.Empty<string>()
+            : csv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    private static BreathingDto? ToBreathing(Exercise e)
+        => e.BreathingConcentric is null && e.BreathingEccentric is null && e.BreathingNotes is null
+            ? null
+            : new BreathingDto(e.BreathingConcentric, e.BreathingEccentric, e.BreathingNotes);
 }

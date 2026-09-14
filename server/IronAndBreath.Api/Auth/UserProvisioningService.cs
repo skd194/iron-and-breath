@@ -47,6 +47,17 @@ public class UserProvisioningService
                     SortOrder = ex.SortOrder,
                     BaseSets = ex.BaseSets,
                     VideoId = ex.VideoId,
+                    // Coaching metadata carries into the user's editable copy.
+                    BreathingConcentric = ex.BreathingConcentric,
+                    BreathingEccentric = ex.BreathingEccentric,
+                    BreathingNotes = ex.BreathingNotes,
+                    PrimaryMuscles = ex.PrimaryMuscles,
+                    SecondaryMuscles = ex.SecondaryMuscles,
+                    Tempo = ex.Tempo,
+                    Benefits = ex.Benefits,
+                    CommonMistakes = ex.CommonMistakes,
+                    SafetyTips = ex.SafetyTips,
+                    AnimationRef = ex.AnimationRef,
                 });
             }
 

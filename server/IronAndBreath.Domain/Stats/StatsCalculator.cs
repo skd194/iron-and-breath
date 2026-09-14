@@ -1,7 +1,8 @@
 namespace IronAndBreath.Domain.Stats;
 
-/// <summary>Minimal input record for stats — only what the maths needs.</summary>
-public readonly record struct CompletedSessionRecord(DateOnly Date, int WorkoutDayId);
+/// <summary>Minimal input record for stats — only what the maths needs.
+/// <paramref name="WorkoutDayId"/> is null for ad-hoc manual sessions.</summary>
+public readonly record struct CompletedSessionRecord(DateOnly Date, int? WorkoutDayId);
 
 public record StatsSummary(
     int TotalSessions,
@@ -46,8 +47,11 @@ public static class StatsCalculator
         var weeksElapsed = WeeksElapsed(programStartDate, today);
         var avgPerWeek = weeksElapsed == 0 ? 0 : Math.Round((double)total / weeksElapsed, 2);
 
+        // Per-day counts only apply to program days; ad-hoc manual sessions
+        // (null day) still count towards totals/streak but not per-day tallies.
         var perDay = completed
-            .GroupBy(s => s.WorkoutDayId)
+            .Where(s => s.WorkoutDayId != null)
+            .GroupBy(s => s.WorkoutDayId!.Value)
             .ToDictionary(g => g.Key, g => g.Count());
 
         return new StatsSummary(

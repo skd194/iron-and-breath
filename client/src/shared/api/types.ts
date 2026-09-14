@@ -8,6 +8,12 @@ export interface VideoDto {
   attribution: string | null
 }
 
+export interface BreathingDto {
+  concentric: string | null
+  eccentric: string | null
+  notes: string | null
+}
+
 export interface ExerciseDto {
   id: number
   name: string
@@ -18,6 +24,14 @@ export interface ExerciseDto {
   baseSets: number
   sortOrder: number
   video: VideoDto | null
+  primaryMuscles: string[]
+  secondaryMuscles: string[]
+  breathing: BreathingDto | null
+  tempo: string | null
+  benefits: string | null
+  commonMistakes: string | null
+  safetyTips: string | null
+  animationRef: string | null
 }
 
 export interface WorkoutDayDto {
@@ -62,27 +76,60 @@ export interface StatsSummaryDto {
   perDayCompletedCounts: Record<number, number>
 }
 
+export type WorkoutSource = 'Guided' | 'Manual' | 'Imported'
+
+export interface SetLogDto {
+  id: number
+  exerciseId: number | null
+  exerciseName: string | null
+  setNumber: number
+  repsCompleted: number | null
+  weightKg: number | null
+  rpe: number | null
+  notes: string | null
+}
+
 export interface SessionDto {
   id: number
-  workoutDayId: number
-  workoutDayName: string
+  workoutDayId: number | null
+  workoutDayName: string | null
   date: string // yyyy-MM-dd
   phaseNumberAtCompletion: number
   startedAt: string
   completedAt: string | null
+  source: WorkoutSource
+  notes: string | null
+  perceivedDifficulty: number | null
+  setLogs: SetLogDto[]
+}
+
+export interface CreateSetLogRequest {
+  exerciseId?: number | null
+  exerciseName?: string | null
+  setNumber: number
+  repsCompleted?: number | null
+  weightKg?: number | null
+  rpe?: number | null
+  notes?: string | null
 }
 
 export interface CreateSessionRequest {
-  workoutDayId: number
+  workoutDayId: number | null
   date: string
   startedAt: string
   completedAt: string | null
+  source?: WorkoutSource
+  notes?: string | null
+  perceivedDifficulty?: number | null
+  setLogs?: CreateSetLogRequest[]
 }
 
 export interface UpdateSessionRequest {
-  workoutDayId: number
+  workoutDayId: number | null
   date: string
   completedAt: string | null
+  notes?: string | null
+  perceivedDifficulty?: number | null
 }
 
 // ---- Auth ----
@@ -137,10 +184,35 @@ export interface UpsertExerciseRequest {
   baseSets: number
   cue?: string | null
   videoId: number | null
+  breathingConcentric?: string | null
+  breathingEccentric?: string | null
+  breathingNotes?: string | null
+  primaryMuscles?: string[]
+  secondaryMuscles?: string[]
+  tempo?: string | null
+  benefits?: string | null
+  commonMistakes?: string | null
+  safetyTips?: string | null
+  animationRef?: string | null
 }
 
 export interface VideoLibraryItemDto {
   id: number
   title: string
   video: VideoDto
+}
+
+// ---- AI coach ----
+
+export interface CoachMessageDto {
+  id: number
+  role: 'user' | 'assistant'
+  content: string
+  createdAt: string
+}
+
+export interface CoachStateDto {
+  aiEnabled: boolean
+  provider: string
+  messages: CoachMessageDto[]
 }

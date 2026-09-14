@@ -11,7 +11,7 @@ interface EditSessionModalProps {
 export function EditSessionModal({ session, days, onClose }: EditSessionModalProps) {
   const updateSession = useUpdateSession()
   const [date, setDate] = useState(session.date)
-  const [workoutDayId, setWorkoutDayId] = useState(session.workoutDayId)
+  const [workoutDayId, setWorkoutDayId] = useState<number | null>(session.workoutDayId)
   const [completed, setCompleted] = useState(session.completedAt != null)
 
   const save = () => {
@@ -37,9 +37,10 @@ export function EditSessionModal({ session, days, onClose }: EditSessionModalPro
         <label className="field">
           <span>Workout day</span>
           <select
-            value={workoutDayId}
-            onChange={(e) => setWorkoutDayId(Number(e.target.value))}
+            value={workoutDayId ?? ''}
+            onChange={(e) => setWorkoutDayId(e.target.value === '' ? null : Number(e.target.value))}
           >
+            <option value="">— No program day (ad-hoc) —</option>
             {days.map((d) => (
               <option key={d.id} value={d.id}>
                 {d.name}

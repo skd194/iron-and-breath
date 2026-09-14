@@ -1,4 +1,5 @@
-import type { PhaseTodayDto, VideoDto, WarmUpDto, WorkoutDayDto } from '../../shared/api/types'
+import type { BreathingDto, PhaseTodayDto, VideoDto, WarmUpDto, WorkoutDayDto } from '../../shared/api/types'
+import type { ExerciseDto } from '../../shared/api/types'
 
 export type StepKind =
   | 'warmup-round'
@@ -15,15 +16,43 @@ export interface SessionStep {
   durationSeconds: number
   isRest: boolean
   // Work-step context
+  exerciseId?: number
+  plannedReps?: number | null
   exerciseName?: string
   repsDisplay?: string
   cue?: string | null
   video?: VideoDto | null
   setNumber?: number
   totalSets?: number
+  // Exercise coaching metadata (also carried onto the related rest steps so the
+  // rest screen can show muscles/technique/breathing for the relevant exercise).
+  primaryMuscles?: string[]
+  secondaryMuscles?: string[]
+  breathing?: BreathingDto | null
+  animationRef?: string | null
+  benefits?: string | null
+  commonMistakes?: string | null
   // Warm-up context
   roundNumber?: number
   totalRounds?: number
+}
+
+/** Extracts the coaching metadata carried on each step from an exercise. */
+function metaOf(ex: ExerciseDto) {
+  return {
+    exerciseId: ex.id,
+    plannedReps: ex.targetRepsHigh ?? ex.targetRepsLow ?? null,
+    exerciseName: ex.name,
+    repsDisplay: ex.repsDisplay,
+    cue: ex.cue,
+    video: ex.video,
+    primaryMuscles: ex.primaryMuscles,
+    secondaryMuscles: ex.secondaryMuscles,
+    breathing: ex.breathing,
+    animationRef: ex.animationRef,
+    benefits: ex.benefits,
+    commonMistakes: ex.commonMistakes,
+  }
 }
 
 /** Sets performed for an exercise under a given phase (baseSets + phase delta). */
@@ -157,6 +186,7 @@ export function buildSessionPlan(
   const exercises = [...day.exercises].sort((a, b) => a.sortOrder - b.sortOrder)
   exercises.forEach((ex, ei) => {
     const sets = setsForExercise(ex.baseSets, phase)
+    const meta = metaOf(ex)
     for (let s = 1; s <= sets; s++) {
       push({
         kind: 'work',
@@ -164,24 +194,26 @@ export function buildSessionPlan(
         subtitle: `Set ${s} of ${sets}`,
         durationSeconds: phase.restWorkSeconds,
         isRest: false,
-        exerciseName: ex.name,
-        repsDisplay: ex.repsDisplay,
-        cue: ex.cue,
-        video: ex.video,
         setNumber: s,
         totalSets: sets,
+        ...meta,
       })
       if (s < sets) {
+        // Within-exercise rest: carry the current exercise's context.
         push({
           kind: 'rest-set',
           title: 'Rest',
           subtitle: `Next: ${ex.name} · set ${s + 1}`,
           durationSeconds: phase.restBetweenSetsSeconds,
           isRest: true,
+          setNumber: s + 1,
+          totalSets: sets,
+          ...meta,
         })
       }
     }
     if (ei < exercises.length - 1) {
+      // Between-exercise rest: preview the NEXT exercise's context.
       const next = exercises[ei + 1]
       push({
         kind: 'rest-exercise',
@@ -189,6 +221,7 @@ export function buildSessionPlan(
         subtitle: `Next up: ${next.name}`,
         durationSeconds: phase.restBetweenExercisesSeconds,
         isRest: true,
+        ...metaOf(next),
       })
     }
   })

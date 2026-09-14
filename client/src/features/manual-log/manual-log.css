@@ -1,0 +1,125 @@
+.manual-log {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  max-width: 760px;
+}
+
+.manual-head h1 {
+  margin-bottom: var(--sp-1);
+}
+
+.manual-picker {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--sp-4);
+  align-items: end;
+}
+.manual-day-select {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.manual-exercises {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.manual-exercise {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.manual-exercise-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.manual-ex-index {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--breath-500) 18%, transparent);
+  color: var(--breath-400);
+  font-weight: 700;
+  font-size: 13px;
+}
+.manual-ex-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.manual-ex-name {
+  font-weight: 650;
+  font-size: 15px;
+  color: var(--text-strong);
+}
+.manual-ex-muscles {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.manual-sets {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.manual-set-head,
+.manual-set-row {
+  display: grid;
+  grid-template-columns: 44px 1fr 1fr 28px;
+  gap: var(--sp-2);
+  align-items: center;
+}
+.manual-set-head {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.manual-set-num {
+  text-align: center;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.manual-add-set {
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.manual-meta {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: var(--sp-4);
+}
+.manual-notes {
+  min-width: 0;
+}
+
+.manual-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
+  background: linear-gradient(180deg, transparent, var(--iron-950) 40%);
+}
+.manual-actions-btns {
+  display: flex;
+  gap: var(--sp-3);
+}
+.manual-count {
+  font-size: 13px;
+}
+
+@media (max-width: 560px) {
+  .manual-picker,
+  .manual-meta {
+    grid-template-columns: 1fr;
+  }
+}

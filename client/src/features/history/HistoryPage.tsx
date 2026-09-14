@@ -1,10 +1,21 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useDeleteSession, useSessions, useWorkoutDays } from '../../shared/api/hooks'
-import type { SessionDto } from '../../shared/api/types'
+import type { SessionDto, SetLogDto } from '../../shared/api/types'
 import { EmptyState, ErrorState, LoadingState } from '../../shared/ui/States'
 import { formatLong } from '../../shared/util/date'
 import { EditSessionModal } from './EditSessionModal'
 import './history.css'
+
+/** One line per logged set, e.g. "Bench Press · set 2 — 10 reps @ 40kg". */
+function describeSet(s: SetLogDto): string {
+  const parts: string[] = []
+  if (s.repsCompleted != null) parts.push(`${s.repsCompleted} reps`)
+  if (s.weightKg != null) parts.push(`${s.weightKg}kg`)
+  const detail = parts.length ? parts.join(' @ ') : '—'
+  const name = s.exerciseName ?? 'Exercise'
+  return `${name} · set ${s.setNumber} — ${detail}`
+}
 
 export function HistoryPage() {
   const sessionsQ = useSessions()
@@ -28,7 +39,12 @@ export function HistoryPage() {
     <div className="history">
       <div className="history-head">
         <h1>History</h1>
-        <span className="muted">{sessions.length} logged</span>
+        <div className="history-head-right">
+          <span className="muted">{sessions.length} logged</span>
+          <Link to="/log" className="btn btn-primary btn-sm">
+            + Log previous workout
+          </Link>
+        </div>
       </div>
 
       {sessions.length === 0 ? (
@@ -45,12 +61,27 @@ export function HistoryPage() {
                 <div className="session-main">
                   <span className="session-date">{formatLong(s.date)}</span>
                   <div className="session-tags">
-                    <span className="badge badge-accent">{s.workoutDayName}</span>
+                    <span className="badge badge-accent">{s.workoutDayName ?? 'Ad-hoc'}</span>
                     <span className="badge">Phase {s.phaseNumberAtCompletion}</span>
+                    {s.source !== 'Guided' && <span className="badge">{s.source}</span>}
                     <span className={`badge ${s.completedAt ? 'ok' : 'warn'}`}>
                       {s.completedAt ? '✓ Completed' : 'Abandoned'}
                     </span>
+                    {s.perceivedDifficulty != null && (
+                      <span className="badge">RPE {s.perceivedDifficulty}</span>
+                    )}
                   </div>
+                  {s.setLogs.length > 0 && (
+                    <details className="session-sets">
+                      <summary>{s.setLogs.length} sets logged</summary>
+                      <ul>
+                        {s.setLogs.map((log) => (
+                          <li key={log.id}>{describeSet(log)}</li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
+                  {s.notes && <p className="session-notes muted">“{s.notes}”</p>}
                 </div>
                 <div className="session-actions">
                   <button className="btn btn-ghost" onClick={() => setEditing(s)}>
@@ -79,7 +110,7 @@ export function HistoryPage() {
           <div className="modal card card-pad" onClick={(e) => e.stopPropagation()}>
             <h2>Delete session?</h2>
             <p className="muted">
-              {formatLong(pendingDelete.date)} · {pendingDelete.workoutDayName}. This can't be undone.
+              {formatLong(pendingDelete.date)} · {pendingDelete.workoutDayName ?? 'Ad-hoc'}. This can't be undone.
             </p>
             <div className="modal-actions">
               <button className="btn btn-ghost" onClick={() => setPendingDelete(null)}>

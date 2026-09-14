@@ -146,17 +146,9 @@ public class WorkoutDaysController : ControllerBase
         }
 
         var nextOrder = day.Exercises.Count == 0 ? 0 : day.Exercises.Max(e => e.SortOrder);
-        day.Exercises.Add(new Exercise
-        {
-            Name = request.Name.Trim(),
-            RepsDisplay = request.RepsDisplay?.Trim() ?? string.Empty,
-            TargetRepsLow = request.TargetRepsLow,
-            TargetRepsHigh = request.TargetRepsHigh,
-            BaseSets = request.BaseSets,
-            Cue = string.IsNullOrWhiteSpace(request.Cue) ? null : request.Cue.Trim(),
-            VideoId = request.VideoId,
-            SortOrder = nextOrder + 1,
-        });
+        var exercise = new Exercise { SortOrder = nextOrder + 1 };
+        ApplyRequest(exercise, request);
+        day.Exercises.Add(exercise);
 
         await _db.SaveChangesAsync(ct);
         return await ReloadDay(dayId, ct);
@@ -178,13 +170,7 @@ public class WorkoutDaysController : ControllerBase
             return validation;
         }
 
-        exercise.Name = request.Name.Trim();
-        exercise.RepsDisplay = request.RepsDisplay?.Trim() ?? string.Empty;
-        exercise.TargetRepsLow = request.TargetRepsLow;
-        exercise.TargetRepsHigh = request.TargetRepsHigh;
-        exercise.BaseSets = request.BaseSets;
-        exercise.Cue = string.IsNullOrWhiteSpace(request.Cue) ? null : request.Cue.Trim();
-        exercise.VideoId = request.VideoId;
+        ApplyRequest(exercise, request);
 
         await _db.SaveChangesAsync(ct);
         return await ReloadDay(dayId, ct);
@@ -223,6 +209,42 @@ public class WorkoutDaysController : ControllerBase
     // ---- Helpers ----
 
     private IQueryable<WorkoutDay> OwnedDays() => _db.WorkoutDays.Where(d => d.UserId == _me.Id);
+
+    /// <summary>Copies a request onto an exercise (create + update share this).</summary>
+    private static void ApplyRequest(Exercise exercise, UpsertExerciseRequest request)
+    {
+        exercise.Name = request.Name.Trim();
+        exercise.RepsDisplay = request.RepsDisplay?.Trim() ?? string.Empty;
+        exercise.TargetRepsLow = request.TargetRepsLow;
+        exercise.TargetRepsHigh = request.TargetRepsHigh;
+        exercise.BaseSets = request.BaseSets;
+        exercise.Cue = Clean(request.Cue);
+        exercise.VideoId = request.VideoId;
+
+        exercise.BreathingConcentric = Clean(request.BreathingConcentric);
+        exercise.BreathingEccentric = Clean(request.BreathingEccentric);
+        exercise.BreathingNotes = Clean(request.BreathingNotes);
+        exercise.PrimaryMuscles = JoinMuscles(request.PrimaryMuscles);
+        exercise.SecondaryMuscles = JoinMuscles(request.SecondaryMuscles);
+        exercise.Tempo = Clean(request.Tempo);
+        exercise.Benefits = Clean(request.Benefits);
+        exercise.CommonMistakes = Clean(request.CommonMistakes);
+        exercise.SafetyTips = Clean(request.SafetyTips);
+        exercise.AnimationRef = Clean(request.AnimationRef);
+    }
+
+    private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    /// <summary>Trims/de-blanks a muscle list into comma-separated storage (null when empty).</summary>
+    private static string? JoinMuscles(IReadOnlyList<string>? muscles)
+    {
+        if (muscles is null)
+        {
+            return null;
+        }
+        var cleaned = muscles.Select(m => m?.Trim()).Where(m => !string.IsNullOrEmpty(m)).ToList();
+        return cleaned.Count == 0 ? null : string.Join(",", cleaned);
+    }
 
     private async Task<ActionResult<WorkoutDayDto>> ReloadDay(int dayId, CancellationToken ct)
     {

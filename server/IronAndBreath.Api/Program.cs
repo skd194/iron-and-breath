@@ -1,4 +1,5 @@
 using System.Text;
+using IronAndBreath.Api.Ai;
 using IronAndBreath.Api.Auth;
 using IronAndBreath.Api.Services;
 using IronAndBreath.Domain.Entities;
@@ -43,6 +44,29 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddSingleton<IVideoResolver, VideoResolver>();
 builder.Services.Configure<WarmUpOptions>(builder.Configuration.GetSection(WarmUpOptions.SectionName));
+
+// ---- AI coach ----
+builder.Services.Configure<AiOptions>(builder.Configuration.GetSection(AiOptions.SectionName));
+// Allow the key to come from the CLAUDE_API_KEY environment variable (never hardcoded).
+builder.Services.PostConfigure<AiOptions>(o =>
+{
+    if (string.IsNullOrWhiteSpace(o.ApiKey))
+    {
+        o.ApiKey = Environment.GetEnvironmentVariable("CLAUDE_API_KEY") ?? string.Empty;
+    }
+});
+var aiOptions = builder.Configuration.GetSection(AiOptions.SectionName).Get<AiOptions>() ?? new AiOptions();
+var aiKeyPresent = !string.IsNullOrWhiteSpace(aiOptions.ApiKey)
+                   || !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("CLAUDE_API_KEY"));
+if (aiKeyPresent)
+{
+    builder.Services.AddHttpClient<IAiProvider, ClaudeAiProvider>(c => c.Timeout = TimeSpan.FromMinutes(5));
+}
+else
+{
+    // No key: use the offline stub so the coach still works in dev.
+    builder.Services.AddScoped<IAiProvider, StubAiProvider>();
+}
 
 // ---- Authentication / authorization ----
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));

@@ -127,6 +127,154 @@
   max-width: 480px;
 }
 
+/* Target muscles */
+.muscles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+.muscle-chip {
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 2px 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid transparent;
+}
+.muscle-chip.primary {
+  background: color-mix(in srgb, var(--accent, var(--breath-500)) 20%, transparent);
+  color: var(--breath-300, var(--breath-400));
+  border-color: color-mix(in srgb, var(--accent, var(--breath-500)) 45%, transparent);
+}
+.muscle-chip.secondary {
+  background: var(--iron-800);
+  color: var(--text-muted);
+}
+.muscles.compact .muscle-chip {
+  font-size: 11px;
+  padding: 1px 8px;
+}
+
+/* Breathing indicator */
+.breathing {
+  display: flex;
+  align-items: stretch;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--iron-850);
+  border: 1px solid var(--iron-800);
+  animation: breathe-pulse 5s ease-in-out infinite;
+}
+.breathing-phase {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 84px;
+}
+.breathing-arrow {
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 700;
+}
+.breathing-arrow.up {
+  color: var(--breath-400);
+}
+.breathing-arrow.down {
+  color: var(--gold-500, var(--text-muted));
+}
+.breathing-word {
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--text-strong);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.breathing-cap {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-faint);
+}
+.breathing-divider {
+  width: 1px;
+  background: var(--iron-700);
+}
+.breathing.breathing-note {
+  display: block;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  animation: none;
+}
+@keyframes breathe-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent, var(--breath-500)) 12%, transparent); }
+}
+
+/* Exercise animation slot */
+.exercise-animation {
+  width: 100%;
+  max-width: 520px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--iron-850);
+  border: 1px solid var(--iron-800);
+}
+.exercise-animation img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.exercise-animation.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+}
+.exercise-animation .anim-emoji {
+  font-size: 40px;
+  opacity: 0.7;
+}
+
+/* Rest panel extras */
+.rest-next-label {
+  margin: 0;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.rest-next-name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 650;
+  color: var(--text-strong);
+}
+.rest-tip {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 480px;
+}
+.rest-tip-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-faint);
+  margin-right: 6px;
+}
+
+/* Voice mic button */
+.mic-btn.listening {
+  color: var(--breath-400);
+  border-color: color-mix(in srgb, var(--breath-500) 55%, transparent);
+  animation: breathe-pulse 2s ease-in-out infinite;
+}
+
 /* Video */
 .video-embed {
   width: 100%;

@@ -17,7 +17,9 @@ export function AppLayout() {
             <NavLink to="/" end>
               Dashboard
             </NavLink>
+            <NavLink to="/coach">Coach</NavLink>
             <NavLink to="/history">History</NavLink>
+            <NavLink to="/log">Log workout</NavLink>
             <NavLink to="/settings">Configure</NavLink>
           </nav>
           <div className="user-menu">

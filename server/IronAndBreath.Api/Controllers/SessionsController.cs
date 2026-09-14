@@ -33,6 +33,7 @@ public class SessionsController : ControllerBase
         var query = _db.WorkoutSessions.AsNoTracking()
             .Where(s => s.UserId == _me.Id)
             .Include(s => s.WorkoutDay)
+            .Include(s => s.SetLogs)
             .AsQueryable();
 
         if (from is not null)
@@ -60,18 +61,51 @@ public class SessionsController : ControllerBase
     {
         var session = await _db.WorkoutSessions.AsNoTracking()
             .Include(s => s.WorkoutDay)
+            .Include(s => s.SetLogs)
             .FirstOrDefaultAsync(s => s.Id == id && s.UserId == _me.Id, ct);
 
         return session is null ? NotFound() : Ok(ToDto(session));
     }
 
-    /// <summary>Log a completed (or abandoned, if CompletedAt is null) session.</summary>
+    /// <summary>
+    /// Log a session — guided (from the player) or manual ("Log Previous Workout").
+    /// WorkoutDayId is optional for ad-hoc manual sessions; set logs are optional.
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<SessionDto>> Create(CreateSessionRequest request, CancellationToken ct)
     {
-        if (!await _db.WorkoutDays.AnyAsync(d => d.Id == request.WorkoutDayId && d.UserId == _me.Id, ct))
+        // Optional program day; when supplied it must belong to the user.
+        if (request.WorkoutDayId is int dayId
+            && !await _db.WorkoutDays.AnyAsync(d => d.Id == dayId && d.UserId == _me.Id, ct))
         {
-            return ValidationProblem($"Workout day {request.WorkoutDayId} does not exist.");
+            return ValidationProblem($"Workout day {dayId} does not exist.");
+        }
+
+        if (request.PerceivedDifficulty is int diff && diff is < 1 or > 10)
+        {
+            return ValidationProblem("Perceived difficulty must be between 1 and 10.");
+        }
+
+        var source = ParseSource(request.Source);
+
+        // Validate + resolve any set logs against the user's own exercises.
+        var setLogs = request.SetLogs ?? Array.Empty<CreateSetLogRequest>();
+        var ownedExercises = setLogs.Any(sl => sl.ExerciseId is not null)
+            ? await _db.Exercises
+                .Where(e => e.WorkoutDay!.UserId == _me.Id)
+                .ToDictionaryAsync(e => e.Id, e => e.Name, ct)
+            : new Dictionary<int, string>();
+
+        foreach (var sl in setLogs)
+        {
+            if (sl.ExerciseId is int exId && !ownedExercises.ContainsKey(exId))
+            {
+                return ValidationProblem($"Exercise {exId} does not exist.");
+            }
+            if (sl.Rpe is int rpe && rpe is < 1 or > 10)
+            {
+                return ValidationProblem("Set RPE must be between 1 and 10.");
+            }
         }
 
         var phase = await ResolvePhaseForDateAsync(request.Date, ct);
@@ -84,8 +118,30 @@ public class SessionsController : ControllerBase
             PhaseNumberAtCompletion = phase,
             StartedAt = request.StartedAt,
             CompletedAt = request.CompletedAt,
+            Source = source,
+            Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(),
+            PerceivedDifficulty = request.PerceivedDifficulty,
             CreatedAt = DateTimeOffset.UtcNow,
         };
+
+        foreach (var sl in setLogs)
+        {
+            // Backfill a durable name from the linked exercise when not supplied.
+            var name = string.IsNullOrWhiteSpace(sl.ExerciseName)
+                ? (sl.ExerciseId is int id && ownedExercises.TryGetValue(id, out var n) ? n : null)
+                : sl.ExerciseName.Trim();
+
+            session.SetLogs.Add(new SessionSetLog
+            {
+                ExerciseId = sl.ExerciseId,
+                ExerciseName = name,
+                SetNumber = sl.SetNumber,
+                RepsCompleted = sl.RepsCompleted,
+                WeightKg = sl.WeightKg,
+                Rpe = sl.Rpe,
+                Notes = string.IsNullOrWhiteSpace(sl.Notes) ? null : sl.Notes.Trim(),
+            });
+        }
 
         _db.WorkoutSessions.Add(session);
         await _db.SaveChangesAsync(ct);
@@ -99,21 +155,30 @@ public class SessionsController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<ActionResult<SessionDto>> Update(int id, UpdateSessionRequest request, CancellationToken ct)
     {
-        var session = await _db.WorkoutSessions.Include(s => s.WorkoutDay)
+        var session = await _db.WorkoutSessions
+            .Include(s => s.WorkoutDay)
+            .Include(s => s.SetLogs)
             .FirstOrDefaultAsync(s => s.Id == id && s.UserId == _me.Id, ct);
         if (session is null)
         {
             return NotFound();
         }
 
-        if (!await _db.WorkoutDays.AnyAsync(d => d.Id == request.WorkoutDayId && d.UserId == _me.Id, ct))
+        if (request.WorkoutDayId is int dayId
+            && !await _db.WorkoutDays.AnyAsync(d => d.Id == dayId && d.UserId == _me.Id, ct))
         {
-            return ValidationProblem($"Workout day {request.WorkoutDayId} does not exist.");
+            return ValidationProblem($"Workout day {dayId} does not exist.");
+        }
+        if (request.PerceivedDifficulty is int diff && diff is < 1 or > 10)
+        {
+            return ValidationProblem("Perceived difficulty must be between 1 and 10.");
         }
 
         session.WorkoutDayId = request.WorkoutDayId;
         session.Date = request.Date;
         session.CompletedAt = request.CompletedAt;
+        session.Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim();
+        session.PerceivedDifficulty = request.PerceivedDifficulty;
         session.PhaseNumberAtCompletion = await ResolvePhaseForDateAsync(request.Date, ct);
 
         await _db.SaveChangesAsync(ct);
@@ -144,12 +209,27 @@ public class SessionsController : ControllerBase
         return ProgressionCalculator.ResolvePhase(startDate, date, phases).PhaseNumber;
     }
 
+    private static WorkoutSource ParseSource(string? source)
+        => Enum.TryParse<WorkoutSource>(source, ignoreCase: true, out var parsed)
+            ? parsed
+            : WorkoutSource.Guided;
+
     private static SessionDto ToDto(WorkoutSession s) => new(
         s.Id,
         s.WorkoutDayId,
-        s.WorkoutDay?.Name ?? string.Empty,
+        s.WorkoutDay?.Name,
         s.Date,
         s.PhaseNumberAtCompletion,
         s.StartedAt,
-        s.CompletedAt);
+        s.CompletedAt,
+        s.Source.ToString(),
+        s.Notes,
+        s.PerceivedDifficulty,
+        s.SetLogs
+            .OrderBy(l => l.ExerciseId ?? int.MaxValue)
+            .ThenBy(l => l.SetNumber)
+            .Select(l => new SetLogDto(
+                l.Id, l.ExerciseId, l.ExerciseName, l.SetNumber,
+                l.RepsCompleted, l.WeightKg, l.Rpe, l.Notes))
+            .ToList());
 }

@@ -1,13 +1,17 @@
-import { useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCreateSession } from '../../shared/api/hooks'
+import type { CreateSessionRequest, CreateSetLogRequest } from '../../shared/api/types'
 import { ProgressRing } from '../../shared/ui/ProgressRing'
 import { todayIso } from '../../shared/util/date'
 import { cueComplete, cueTransition, unlockAudio } from './audio'
+import { BreathingIndicator } from './components/BreathingIndicator'
+import { ExerciseAnimation } from './components/ExerciseAnimation'
 import { SessionAgenda } from './components/SessionAgenda'
-import { VideoEmbed } from './components/VideoEmbed'
+import { TargetMuscles } from './components/TargetMuscles'
 import type { SessionStep } from './session-plan'
 import { useSessionRunner } from './useSessionRunner'
+import { useVoiceCommands, type VoiceIntent } from './voice/useVoiceCommands'
 
 interface RunningSessionProps {
   steps: SessionStep[]
@@ -37,28 +41,95 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
   const createSession = useCreateSession()
   const startedAtRef = useRef(new Date())
   const postedRef = useRef(false)
+  // Set logs accumulate as each work set actually starts (skipped-past sets are
+  // never recorded), keyed by step id so re-entering a set doesn't duplicate.
+  const setLogsRef = useRef(new Map<string, CreateSetLogRequest>())
   const [finished, setFinished] = useState(false)
   const [confirmExit, setConfirmExit] = useState(false)
 
+  // Resume the same session if the user navigates away and comes back.
+  const persistKey = `ib_run_${dayId}`
+
+  const buildPayload = useCallback(
+    (): CreateSessionRequest => ({
+      workoutDayId: dayId,
+      date: todayIso(),
+      startedAt: startedAtRef.current.toISOString(),
+      completedAt: new Date().toISOString(),
+      source: 'Guided',
+      setLogs: Array.from(setLogsRef.current.values()),
+    }),
+    [dayId],
+  )
+
   const runner = useSessionRunner(steps, {
-    onStepStart: () => {
+    persistKey,
+    onStepStart: (step) => {
       unlockAudio()
       cueTransition()
+      // Record the set as performed (reps default to the plan; weights are
+      // entered via manual log / history for now).
+      if (step.kind === 'work' && step.exerciseId != null && step.setNumber != null) {
+        setLogsRef.current.set(step.id, {
+          exerciseId: step.exerciseId,
+          exerciseName: step.exerciseName ?? null,
+          setNumber: step.setNumber,
+          repsCompleted: step.plannedReps ?? null,
+        })
+      }
     },
     onComplete: () => {
       cueComplete()
       setFinished(true)
       if (!postedRef.current) {
         postedRef.current = true
-        createSession.mutate({
-          workoutDayId: dayId,
-          date: todayIso(),
-          startedAt: startedAtRef.current.toISOString(),
-          completedAt: new Date().toISOString(),
-        })
+        createSession.mutate(buildPayload())
       }
     },
   })
+
+  // Voice seam: spoken phrases drive the same controls. Opt-in via the mic
+  // button; recognition only runs where the browser supports it.
+  const handleIntent = useCallback(
+    (intent: VoiceIntent) => {
+      switch (intent) {
+        case 'start':
+        case 'resume':
+          runner.resume()
+          break
+        case 'pause':
+          runner.pause()
+          break
+        case 'skip':
+          runner.skip()
+          break
+        case 'next-exercise':
+          runner.skipExercise()
+          break
+        case 'restart':
+          runner.restartStep()
+          break
+        case 'stop':
+          setConfirmExit(true)
+          break
+        default:
+          // Informational intents (reps/rest/muscle questions) get spoken
+          // answers in a later phase.
+          break
+      }
+    },
+    [runner],
+  )
+  const voice = useVoiceCommands(handleIntent, { enabled: true })
+
+  const exitSession = useCallback(() => {
+    try {
+      sessionStorage.removeItem(persistKey)
+    } catch {
+      /* non-fatal */
+    }
+    navigate('/')
+  }, [navigate, persistKey])
 
   const summary = useMemo(() => {
     const workSteps = steps.filter((s) => s.kind === 'work')
@@ -98,12 +169,7 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
             {createSession.isError && (
               <span style={{ color: 'var(--danger-500)' }}>
                 Couldn't save — {' '}
-                <button className="linklike" onClick={() => createSession.mutate({
-                  workoutDayId: dayId,
-                  date: todayIso(),
-                  startedAt: startedAtRef.current.toISOString(),
-                  completedAt: new Date().toISOString(),
-                })}>retry</button>
+                <button className="linklike" onClick={() => createSession.mutate(buildPayload())}>retry</button>
               </span>
             )}
           </div>
@@ -131,6 +197,16 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
           ✕ Exit
         </button>
         <div className="player-progress-info">
+          {voice.supported && (
+            <button
+              className={`btn btn-ghost btn-sm mic-btn${voice.listening ? ' listening' : ''}`}
+              onClick={voice.toggle}
+              title={voice.listening ? 'Stop voice commands' : 'Voice commands (say "pause", "skip"…)'}
+              aria-pressed={voice.listening}
+            >
+              {voice.listening ? '🎙️ Listening' : '🎙️ Voice'}
+            </button>
+          )}
           <span className="badge">
             Step {runner.index + 1} / {runner.totalSteps}
           </span>
@@ -159,15 +235,16 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
               </ProgressRing>
             </div>
 
-            <div className="player-info">
-              <h1 className="player-title">{step.title}</h1>
-              {step.subtitle && <p className="player-subtitle">{step.subtitle}</p>}
-              {isWork && step.repsDisplay && (
-                <div className="player-reps">{step.repsDisplay}</div>
-              )}
-              {isWork && step.cue && <p className="player-cue">💡 {step.cue}</p>}
-              {isWork && <VideoEmbed video={step.video} />}
-            </div>
+            {isWork ? (
+              <WorkPanel step={step} />
+            ) : step.isRest ? (
+              <RestPanel step={step} />
+            ) : (
+              <div className="player-info">
+                <h1 className="player-title">{step.title}</h1>
+                {step.subtitle && <p className="player-subtitle">{step.subtitle}</p>}
+              </div>
+            )}
           </div>
 
           {/* Controls */}
@@ -181,6 +258,15 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
             <button className="btn btn-ghost" onClick={runner.skip} title="Skip to next step">
               Skip ⏭
             </button>
+            {isWork && (
+              <button
+                className="btn btn-ghost"
+                onClick={runner.skipExercise}
+                title="Skip the rest of this exercise"
+              >
+                Skip exercise ⏭⏭
+              </button>
+            )}
           </div>
         </div>
 
@@ -201,12 +287,55 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
               <button className="btn btn-ghost" onClick={() => setConfirmExit(false)}>
                 Keep going
               </button>
-              <button className="btn btn-danger" onClick={() => navigate('/')}>
+              <button className="btn btn-danger" onClick={exitSession}>
                 Exit without saving
               </button>
             </div>
           </div>
         </div>
+      )}
+    </div>
+  )
+}
+
+/** The active-set view: reps, animation, breathing, target muscles, cue. */
+function WorkPanel({ step }: { step: SessionStep }) {
+  return (
+    <div className="player-info">
+      <h1 className="player-title">{step.title}</h1>
+      {step.subtitle && <p className="player-subtitle">{step.subtitle}</p>}
+      {step.repsDisplay && <div className="player-reps">{step.repsDisplay}</div>}
+      <ExerciseAnimation animationRef={step.animationRef} video={step.video} name={step.title} />
+      <BreathingIndicator breathing={step.breathing} />
+      <TargetMuscles primary={step.primaryMuscles} secondary={step.secondaryMuscles} />
+      {step.cue && <p className="player-cue">💡 {step.cue}</p>}
+    </div>
+  )
+}
+
+/** The rest view: what's coming up + useful context, without being distracting. */
+function RestPanel({ step }: { step: SessionStep }) {
+  return (
+    <div className="player-info rest-panel">
+      <h1 className="player-title">Rest</h1>
+      {step.exerciseName && (
+        <>
+          <p className="rest-next-label muted">Up next</p>
+          <p className="rest-next-name">{step.exerciseName}</p>
+        </>
+      )}
+      {step.subtitle && <p className="player-subtitle">{step.subtitle}</p>}
+      <TargetMuscles primary={step.primaryMuscles} secondary={step.secondaryMuscles} compact />
+      {step.cue && <p className="player-cue">💡 {step.cue}</p>}
+      {step.commonMistakes && (
+        <p className="rest-tip">
+          <span className="rest-tip-label">Avoid</span> {step.commonMistakes}
+        </p>
+      )}
+      {step.benefits && (
+        <p className="rest-tip">
+          <span className="rest-tip-label">Why</span> {step.benefits}
+        </p>
       )}
     </div>
   )

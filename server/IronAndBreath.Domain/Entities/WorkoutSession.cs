@@ -11,8 +11,21 @@ public class WorkoutSession
     public int UserId { get; set; }
     public User? User { get; set; }
 
-    public int WorkoutDayId { get; set; }
+    /// <summary>
+    /// The program day performed. Null for ad-hoc manual sessions (e.g. a workout
+    /// done away from the app with exercises not in the user's program).
+    /// </summary>
+    public int? WorkoutDayId { get; set; }
     public WorkoutDay? WorkoutDay { get; set; }
+
+    /// <summary>How this session was recorded (guided/manual/imported).</summary>
+    public WorkoutSource Source { get; set; } = WorkoutSource.Guided;
+
+    /// <summary>Optional free-text notes for the whole session.</summary>
+    public string? Notes { get; set; }
+
+    /// <summary>Optional session-level perceived difficulty / RPE (1-10).</summary>
+    public int? PerceivedDifficulty { get; set; }
 
     /// <summary>Calendar date the session was performed (timezone-safe, no time component).</summary>
     public DateOnly Date { get; set; }
