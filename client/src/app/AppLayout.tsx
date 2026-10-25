@@ -23,7 +23,7 @@ export function AppLayout() {
             <NavLink to="/nutrition">Nutrition</NavLink>
             <NavLink to="/equipment">Equipment</NavLink>
             <NavLink to="/history">History</NavLink>
-            <NavLink to="/log">Log workout</NavLink>
+            <NavLink to="/log">Log</NavLink>
             <NavLink to="/settings">Configure</NavLink>
           </nav>
           <div className="user-menu">
