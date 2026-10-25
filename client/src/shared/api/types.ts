@@ -66,11 +66,18 @@ export interface PhaseTodayDto {
   programStartDate: string // ISO date (yyyy-MM-dd)
 }
 
+export interface WarmUpMovementDto {
+  name: string
+  seconds: number
+  cue: string | null
+}
+
 export interface WarmUpDto {
   name: string
   rounds: number
   secondsPerRound: number
   transitionSeconds: number
+  movements: WarmUpMovementDto[]
 }
 
 export interface SettingsDto {

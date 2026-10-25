@@ -54,11 +54,14 @@ public record PhaseTodayDto(
     string? Notes,
     DateOnly ProgramStartDate);
 
+public record WarmUpMovementDto(string Name, int Seconds, string? Cue);
+
 public record WarmUpDto(
     string Name,
     int Rounds,
     int SecondsPerRound,
-    int TransitionSeconds);
+    int TransitionSeconds,
+    IReadOnlyList<WarmUpMovementDto> Movements);
 
 public record SettingsDto(
     DateOnly ProgramStartDate,

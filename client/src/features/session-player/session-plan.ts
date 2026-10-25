@@ -186,7 +186,17 @@ export function buildSessionPlan(
   let n = 0
   const push = (s: Omit<SessionStep, 'id'>) => steps.push({ ...s, id: `${s.kind}-${n++}` })
 
-  // --- Warm-up: N rounds of Surya Namaskar with transition breaks between ---
+  // --- Warm-up: dynamic movements first (to get started), then Surya Namaskar ---
+  for (const m of warmup.movements ?? []) {
+    push({
+      kind: 'warmup-round',
+      title: m.name,
+      subtitle: m.cue ?? 'Warm-up',
+      durationSeconds: m.seconds,
+      isRest: false,
+    })
+  }
+
   for (let r = 1; r <= warmup.rounds; r++) {
     push({
       kind: 'warmup-round',

@@ -29,7 +29,12 @@ public class ProgramController : ControllerBase
     /// <summary>Warm-up parameters (Surya Namaskar rounds and timings).</summary>
     [HttpGet("warmup")]
     public ActionResult<WarmUpDto> GetWarmUp()
-        => Ok(new WarmUpDto(_warmUp.Name, _warmUp.Rounds, _warmUp.SecondsPerRound, _warmUp.TransitionSeconds));
+        => Ok(new WarmUpDto(
+            _warmUp.Name,
+            _warmUp.Rounds,
+            _warmUp.SecondsPerRound,
+            _warmUp.TransitionSeconds,
+            _warmUp.Movements.Select(m => new WarmUpMovementDto(m.Name, m.Seconds, m.Cue)).ToList()));
 
     /// <summary>Current progression phase and its parameters, computed from today's date.</summary>
     [HttpGet("phase-today")]
