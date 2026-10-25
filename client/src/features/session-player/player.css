@@ -846,3 +846,21 @@ a.exercise-animation.video-search:hover {
 }
 .setlog-field input:focus { outline: none; border-color: var(--breath-600); }
 .setlog-save { align-self: center; }
+
+/* Animated two-frame movement demo (free-exercise-db) */
+.exercise-animation.frames {
+  position: relative;
+  background: #f4f5f7;
+}
+.exercise-animation.frames img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.exercise-animation.frames img.on {
+  opacity: 1;
+}

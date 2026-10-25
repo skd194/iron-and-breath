@@ -161,8 +161,8 @@ export function DashboardPage() {
       <section className="progress-grid">
         <BodyweightCard />
         <div className="card card-pad">
-          <div className="section-title">Sessions · last 12 weeks</div>
-          <BarChart bars={weeklyBars(sessions)} />
+          <div className="section-title">Weekly volume (kg) · last 12 weeks</div>
+          <BarChart bars={weeklyVolume(sessions)} />
         </div>
       </section>
 
@@ -251,8 +251,12 @@ function BodyweightCard() {
   )
 }
 
-/** Completed sessions bucketed into the last `weeks` Monday-anchored weeks. */
-function weeklyBars(sessions: SessionDto[], weeks = 12): Bar[] {
+/**
+ * Weekly training volume (volume load = Σ weight × reps) over the last `weeks`
+ * Monday-anchored weeks — the clearest measure of progressive overload. Only
+ * counts sets with a logged weight, so it climbs as you log weights.
+ */
+function weeklyVolume(sessions: SessionDto[], weeks = 12): Bar[] {
   const today = new Date()
   const monday = (d: Date) => addDays(d, -(((d.getDay() + 6) % 7)))
   const thisMonday = monday(today)
@@ -262,10 +266,18 @@ function weeklyBars(sessions: SessionDto[], weeks = 12): Bar[] {
     const start = addDays(thisMonday, -7 * w)
     const startIso = toIsoDate(start)
     const endIso = toIsoDate(addDays(start, 6))
-    const count = sessions.filter(
-      (s) => s.completedAt != null && s.date >= startIso && s.date <= endIso,
-    ).length
-    buckets.push({ label: start.getDate() === 1 || w === weeks - 1 ? startIso.slice(5) : `${start.getDate()}`, value: count })
+    const volume = sessions
+      .filter((s) => s.completedAt != null && s.date >= startIso && s.date <= endIso)
+      .reduce(
+        (sum, s) =>
+          sum +
+          s.setLogs.reduce((v, log) => v + (log.weightKg ?? 0) * (log.repsCompleted ?? 0), 0),
+        0,
+      )
+    buckets.push({
+      label: start.getDate() === 1 || w === weeks - 1 ? startIso.slice(5) : `${start.getDate()}`,
+      value: Math.round(volume),
+    })
   }
   return buckets
 }

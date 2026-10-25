@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react'
 import type { VideoDto } from '../../../shared/api/types'
+import { framesFor } from './exercise-frames'
 import { VideoEmbed } from './VideoEmbed'
 
 interface ExerciseAnimationProps {
@@ -10,22 +12,17 @@ interface ExerciseAnimationProps {
 }
 
 /**
- * Pluggable movement-demonstration slot. Resolves an `animationRef` to a real
- * asset when one is registered; otherwise falls back to the instructional video,
- * then to a styled placeholder. Keeping asset resolution here (not in the
- * workout logic) means real animations can be dropped in later by registering
- * them in ANIMATION_ASSETS — nothing else changes.
+ * Movement-demonstration slot. Prefers an animated two-frame clip from the
+ * exercise-media library (free-exercise-db, CC0); falls back to the instructional
+ * video, then to a one-tap "Watch form on YouTube" search for anything uncovered
+ * (yoga, skipping, warm-ups).
  */
 export function ExerciseAnimation({ animationRef, video, name, compact = false }: ExerciseAnimationProps) {
-  const asset = resolveAnimation(animationRef)
+  const frames = framesFor(animationRef)
   const cls = `exercise-animation${compact ? ' compact' : ''}`
 
-  if (asset) {
-    return (
-      <div className={cls}>
-        <img src={asset} alt={`${name} movement demonstration`} />
-      </div>
-    )
+  if (frames) {
+    return <AnimatedFrames frames={frames} name={name} className={cls} />
   }
 
   if (video?.embedUrl) {
@@ -36,7 +33,6 @@ export function ExerciseAnimation({ animationRef, video, name, compact = false }
     )
   }
 
-  // No curated clip yet — offer a one-tap search for a form video on YouTube.
   const query = encodeURIComponent(`${name} proper form technique`)
   return (
     <a
@@ -52,11 +48,27 @@ export function ExerciseAnimation({ animationRef, video, name, compact = false }
   )
 }
 
-// Asset registry: maps an exercise's `animationRef` key to a media URL. Empty
-// for now — real animation assets get registered here in a later phase.
-const ANIMATION_ASSETS: Record<string, string> = {}
+/** Cross-fades between the start/end frames to animate the movement. */
+function AnimatedFrames({ frames, name, className }: { frames: string[]; name: string; className: string }) {
+  const [i, setI] = useState(0)
 
-function resolveAnimation(ref?: string | null): string | null {
-  if (!ref) return null
-  return ANIMATION_ASSETS[ref] ?? null
+  useEffect(() => {
+    if (frames.length < 2) return
+    const id = window.setInterval(() => setI((p) => (p + 1) % frames.length), 1100)
+    return () => window.clearInterval(id)
+  }, [frames])
+
+  return (
+    <div className={`${className} frames`}>
+      {frames.map((src, idx) => (
+        <img
+          key={src}
+          src={src}
+          alt={`${name} — movement frame ${idx + 1}`}
+          loading="lazy"
+          className={idx === i ? 'on' : ''}
+        />
+      ))}
+    </div>
+  )
 }
