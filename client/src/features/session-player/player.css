@@ -686,3 +686,12 @@
 }
 .rest-muscle-fn { font-size: 13px; color: var(--text-muted); }
 .rest-muscle-injury { font-size: 12px; color: var(--warn-500); }
+
+/* Compact form clip on the work screen so it never buries the coaching. */
+.exercise-animation.compact {
+  max-width: 320px;
+}
+.exercise-animation-wrap { width: 100%; display: flex; justify-content: center; }
+.exercise-animation-wrap.compact .video-embed {
+  max-width: 300px;
+}

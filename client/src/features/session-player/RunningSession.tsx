@@ -308,7 +308,11 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
   )
 }
 
-/** The active-set view: reps, animation, rep-tempo metronome, target muscles, cue. */
+/**
+ * The active-set view. Coaching comes first and stays visible: reps, the
+ * breathing/tempo metronome, and the target muscles sit directly under the title,
+ * with a compact form clip below so it never buries the guidance.
+ */
 function WorkPanel({ step, remainingMs }: { step: SessionStep; remainingMs: number }) {
   const hasTempo = !!toRepTempo(step.tempoSpec) && (step.plannedReps ?? 0) > 0
   return (
@@ -316,7 +320,6 @@ function WorkPanel({ step, remainingMs }: { step: SessionStep; remainingMs: numb
       <h1 className="player-title">{step.title}</h1>
       {step.subtitle && <p className="player-subtitle">{step.subtitle}</p>}
       {step.repsDisplay && <div className="player-reps">{step.repsDisplay}</div>}
-      <ExerciseAnimation animationRef={step.animationRef} video={step.video} name={step.title} />
       {hasTempo ? (
         <RepTempoGuide
           tempoSpec={step.tempoSpec}
@@ -330,6 +333,7 @@ function WorkPanel({ step, remainingMs }: { step: SessionStep; remainingMs: numb
       )}
       <TargetMuscles primary={step.primaryMuscles} secondary={step.secondaryMuscles} />
       {step.cue && <p className="player-cue">💡 {step.cue}</p>}
+      <ExerciseAnimation animationRef={step.animationRef} video={step.video} name={step.title} compact />
     </div>
   )
 }
