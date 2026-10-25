@@ -9,19 +9,63 @@ interface SetLogFormProps {
   setLogsRef: MutableRefObject<Map<string, CreateSetLogRequest>>
 }
 
+interface LastValue {
+  weightKg?: number | null
+  reps?: number | null
+  rpe?: number | null
+}
+
+const lastKey = (exerciseId: number | null | undefined) =>
+  exerciseId != null ? `ib_lastset_${exerciseId}` : null
+
+function readLast(exerciseId: number | null | undefined): LastValue | null {
+  const key = lastKey(exerciseId)
+  if (!key) return null
+  try {
+    const raw = localStorage.getItem(key)
+    return raw ? (JSON.parse(raw) as LastValue) : null
+  } catch {
+    return null
+  }
+}
+
+function writeLast(exerciseId: number | null | undefined, value: LastValue) {
+  const key = lastKey(exerciseId)
+  if (!key) return
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+  } catch {
+    /* storage unavailable */
+  }
+}
+
 /**
- * Captures the actual weight / reps / RPE for the set that just finished, during
- * the rest that follows it. Writes straight into the session's set-log map so the
- * numbers are saved when the session is logged. Keyed by the work step, so the
- * values persist if the user leaves and returns to this rest step.
+ * Captures the actual weight / reps / RPE for the set that just finished. Defaults
+ * to the last value logged for the same exercise — the previous set this session,
+ * or the last time you did it (persisted) — so you rarely re-type the weight.
+ * Writes straight into the session's set-log map and persists the last value.
  */
 export function SetLogForm({ workStep, setLogsRef }: SetLogFormProps) {
   const existing = setLogsRef.current.get(workStep.id)
-  const [reps, setReps] = useState(
-    existing?.repsCompleted?.toString() ?? workStep.plannedReps?.toString() ?? '',
+  const alreadySaved = existing?.weightKg != null
+
+  // The most recent set of this exercise with a logged weight (earlier this session).
+  const priorThisSession = [...setLogsRef.current.entries()]
+    .filter(([k, l]) => k !== workStep.id && l.exerciseId === workStep.exerciseId && l.weightKg != null)
+    .map(([, l]) => l)
+    .sort((a, b) => (b.setNumber ?? 0) - (a.setNumber ?? 0))[0]
+
+  const fallback: LastValue = priorThisSession
+    ? { weightKg: priorThisSession.weightKg, reps: priorThisSession.repsCompleted, rpe: priorThisSession.rpe }
+    : (readLast(workStep.exerciseId) ?? {})
+
+  const [weight, setWeight] = useState(
+    (alreadySaved ? existing?.weightKg : fallback.weightKg)?.toString() ?? '',
   )
-  const [weight, setWeight] = useState(existing?.weightKg?.toString() ?? '')
-  const [rpe, setRpe] = useState(existing?.rpe?.toString() ?? '')
+  const [reps, setReps] = useState(
+    (alreadySaved ? existing?.repsCompleted : (fallback.reps ?? workStep.plannedReps))?.toString() ?? '',
+  )
+  const [rpe, setRpe] = useState((alreadySaved ? existing?.rpe : fallback.rpe)?.toString() ?? '')
   const [saved, setSaved] = useState(false)
 
   const save = () => {
@@ -31,12 +75,11 @@ export function SetLogForm({ workStep, setLogsRef }: SetLogFormProps) {
       setNumber: workStep.setNumber ?? 1,
       repsCompleted: workStep.plannedReps ?? null,
     }
-    setLogsRef.current.set(workStep.id, {
-      ...base,
-      repsCompleted: reps ? Number(reps) : base.repsCompleted,
-      weightKg: weight ? Number(weight) : null,
-      rpe: rpe ? Number(rpe) : null,
-    })
+    const weightKg = weight ? Number(weight) : null
+    const repsCompleted = reps ? Number(reps) : base.repsCompleted
+    const rpeVal = rpe ? Number(rpe) : null
+    setLogsRef.current.set(workStep.id, { ...base, repsCompleted, weightKg, rpe: rpeVal })
+    writeLast(workStep.exerciseId, { weightKg, reps: repsCompleted, rpe: rpeVal })
     setSaved(true)
   }
 
