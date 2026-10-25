@@ -916,3 +916,21 @@ a.exercise-animation.video-search:hover {
   color: #ff0033;
   border-color: color-mix(in srgb, #ff0033 50%, transparent);
 }
+
+/* Muscle chip legend */
+.muscles-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-left: var(--sp-2);
+}
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.legend-dot.primary { background: var(--accent, var(--breath-500)); margin-right: 1px; }
+.legend-dot.secondary { background: var(--iron-600); margin: 0 1px 0 6px; }

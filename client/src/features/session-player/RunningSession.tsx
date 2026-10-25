@@ -298,7 +298,7 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
                   )}
                 </div>
                 <div className="stage-detail">
-                  <WorkDetail step={step} />
+                  <WorkDetail step={step} muscleLookup={muscleLookup} />
                 </div>
               </div>
             ) : isRestBetween ? (
@@ -373,11 +373,15 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
 }
 
 /** Work-set detail column: the form clip, target muscles, and the cue. */
-function WorkDetail({ step }: { step: SessionStep }) {
+function WorkDetail({ step, muscleLookup }: { step: SessionStep; muscleLookup: MuscleLookup }) {
   return (
     <div className="player-detail">
       <ExerciseAnimation animationRef={step.animationRef} video={step.video} name={step.title} />
-      <TargetMuscles primary={step.primaryMuscles} secondary={step.secondaryMuscles} />
+      <TargetMuscles
+        primary={step.primaryMuscles}
+        secondary={step.secondaryMuscles}
+        lookup={muscleLookup}
+      />
       {step.cue && <p className="player-cue">💡 {step.cue}</p>}
     </div>
   )
@@ -387,13 +391,18 @@ function WorkDetail({ step }: { step: SessionStep }) {
  * Rest detail column: rehearse the upcoming movement's form and read its technique
  * tips while recovering — the animation, cue, safety and "why".
  */
-function RestDetail({ step, muscleLookup: _muscleLookup }: { step: SessionStep; muscleLookup: MuscleLookup }) {
+function RestDetail({ step, muscleLookup }: { step: SessionStep; muscleLookup: MuscleLookup }) {
   return (
     <div className="player-detail rest-panel">
       {step.exerciseName && (
         <ExerciseAnimation animationRef={step.animationRef} video={step.video} name={step.exerciseName} />
       )}
-      <TargetMuscles primary={step.primaryMuscles} secondary={step.secondaryMuscles} compact />
+      <TargetMuscles
+        primary={step.primaryMuscles}
+        secondary={step.secondaryMuscles}
+        compact
+        lookup={muscleLookup}
+      />
 
       {step.cue && <p className="player-cue">💡 {step.cue}</p>}
       {step.safetyTips && (
