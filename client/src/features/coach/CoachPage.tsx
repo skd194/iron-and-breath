@@ -89,9 +89,10 @@ export function CoachPage() {
       <div className="coach-head">
         <div>
           <h1>AI Coach</h1>
-          <span className="muted coach-provider">
+          <span className={`coach-provider${aiEnabled ? ' live' : ''}`}>
+            <span className="coach-provider-dot" aria-hidden />
             {provider}
-            {!aiEnabled && ' · set CLAUDE_API_KEY for the full coach'}
+            {!aiEnabled && ' · offline demo — set CLAUDE_API_KEY for the full coach'}
           </span>
         </div>
         {!empty && (
