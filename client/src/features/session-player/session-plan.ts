@@ -1,5 +1,13 @@
-import type { BreathingDto, PhaseTodayDto, VideoDto, WarmUpDto, WorkoutDayDto } from '../../shared/api/types'
+import type {
+  BreathingDto,
+  PhaseTodayDto,
+  TempoDto,
+  VideoDto,
+  WarmUpDto,
+  WorkoutDayDto,
+} from '../../shared/api/types'
 import type { ExerciseDto } from '../../shared/api/types'
+import { toRepTempo, tempoSetSeconds } from './rep-tempo'
 
 export type StepKind =
   | 'warmup-round'
@@ -29,9 +37,11 @@ export interface SessionStep {
   primaryMuscles?: string[]
   secondaryMuscles?: string[]
   breathing?: BreathingDto | null
+  tempoSpec?: TempoDto | null
   animationRef?: string | null
   benefits?: string | null
   commonMistakes?: string | null
+  safetyTips?: string | null
   // Warm-up context
   roundNumber?: number
   totalRounds?: number
@@ -49,10 +59,26 @@ function metaOf(ex: ExerciseDto) {
     primaryMuscles: ex.primaryMuscles,
     secondaryMuscles: ex.secondaryMuscles,
     breathing: ex.breathing,
+    tempoSpec: ex.tempoSpec,
     animationRef: ex.animationRef,
     benefits: ex.benefits,
     commonMistakes: ex.commonMistakes,
+    safetyTips: ex.safetyTips,
   }
+}
+
+/**
+ * How long a work set should run. Tempo-synced when the exercise has a structured
+ * tempo and a concrete rep target (reps × cycle); otherwise the phase's fixed work
+ * timer (holds, to-failure sets, and legacy exercises without tempo).
+ */
+function workStepSeconds(ex: ExerciseDto, phase: PhaseTodayDto): number {
+  const tempo = toRepTempo(ex.tempoSpec)
+  const reps = ex.targetRepsHigh ?? ex.targetRepsLow ?? null
+  if (tempo && reps && reps > 0) {
+    return tempoSetSeconds(tempo, reps)
+  }
+  return phase.restWorkSeconds
 }
 
 /** Sets performed for an exercise under a given phase (baseSets + phase delta). */
@@ -187,12 +213,13 @@ export function buildSessionPlan(
   exercises.forEach((ex, ei) => {
     const sets = setsForExercise(ex.baseSets, phase)
     const meta = metaOf(ex)
+    const workSeconds = workStepSeconds(ex, phase)
     for (let s = 1; s <= sets; s++) {
       push({
         kind: 'work',
         title: ex.name,
         subtitle: `Set ${s} of ${sets}`,
-        durationSeconds: phase.restWorkSeconds,
+        durationSeconds: workSeconds,
         isRest: false,
         setNumber: s,
         totalSets: sets,

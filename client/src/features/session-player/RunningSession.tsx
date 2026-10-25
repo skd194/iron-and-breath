@@ -1,17 +1,22 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useCreateSession } from '../../shared/api/hooks'
-import type { CreateSessionRequest, CreateSetLogRequest } from '../../shared/api/types'
+import { useCreateSession, useMuscles } from '../../shared/api/hooks'
+import type { CreateSessionRequest, CreateSetLogRequest, MuscleDto } from '../../shared/api/types'
 import { ProgressRing } from '../../shared/ui/ProgressRing'
 import { todayIso } from '../../shared/util/date'
 import { cueComplete, cueTransition, unlockAudio } from './audio'
 import { BreathingIndicator } from './components/BreathingIndicator'
 import { ExerciseAnimation } from './components/ExerciseAnimation'
+import { RepTempoGuide } from './components/RepTempoGuide'
 import { SessionAgenda } from './components/SessionAgenda'
 import { TargetMuscles } from './components/TargetMuscles'
+import { toRepTempo } from './rep-tempo'
 import type { SessionStep } from './session-plan'
 import { useSessionRunner } from './useSessionRunner'
 import { useVoiceCommands, type VoiceIntent } from './voice/useVoiceCommands'
+
+/** Case-insensitive lookup from muscle name to its catalog entry. */
+export type MuscleLookup = (name: string) => MuscleDto | undefined
 
 interface RunningSessionProps {
   steps: SessionStep[]
@@ -39,6 +44,11 @@ function formatTime(ms: number): string {
 export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber }: RunningSessionProps) {
   const navigate = useNavigate()
   const createSession = useCreateSession()
+  const musclesQ = useMuscles()
+  const muscleLookup = useMemo<MuscleLookup>(() => {
+    const map = new Map((musclesQ.data ?? []).map((m) => [m.name.toLowerCase(), m]))
+    return (name: string) => map.get(name.toLowerCase())
+  }, [musclesQ.data])
   const startedAtRef = useRef(new Date())
   const postedRef = useRef(false)
   // Set logs accumulate as each work set actually starts (skipped-past sets are
@@ -236,9 +246,9 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
             </div>
 
             {isWork ? (
-              <WorkPanel step={step} />
+              <WorkPanel step={step} remainingMs={runner.remainingMs} />
             ) : step.isRest ? (
-              <RestPanel step={step} />
+              <RestPanel step={step} muscleLookup={muscleLookup} />
             ) : (
               <div className="player-info">
                 <h1 className="player-title">{step.title}</h1>
@@ -298,35 +308,66 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
   )
 }
 
-/** The active-set view: reps, animation, breathing, target muscles, cue. */
-function WorkPanel({ step }: { step: SessionStep }) {
+/** The active-set view: reps, animation, rep-tempo metronome, target muscles, cue. */
+function WorkPanel({ step, remainingMs }: { step: SessionStep; remainingMs: number }) {
+  const hasTempo = !!toRepTempo(step.tempoSpec) && (step.plannedReps ?? 0) > 0
   return (
     <div className="player-info">
       <h1 className="player-title">{step.title}</h1>
       {step.subtitle && <p className="player-subtitle">{step.subtitle}</p>}
       {step.repsDisplay && <div className="player-reps">{step.repsDisplay}</div>}
       <ExerciseAnimation animationRef={step.animationRef} video={step.video} name={step.title} />
-      <BreathingIndicator breathing={step.breathing} />
+      {hasTempo ? (
+        <RepTempoGuide
+          tempoSpec={step.tempoSpec}
+          reps={step.plannedReps}
+          breathing={step.breathing}
+          totalSeconds={step.durationSeconds}
+          remainingMs={remainingMs}
+        />
+      ) : (
+        <BreathingIndicator breathing={step.breathing} />
+      )}
       <TargetMuscles primary={step.primaryMuscles} secondary={step.secondaryMuscles} />
       {step.cue && <p className="player-cue">💡 {step.cue}</p>}
     </div>
   )
 }
 
-/** The rest view: what's coming up + useful context, without being distracting. */
-function RestPanel({ step }: { step: SessionStep }) {
+/**
+ * The rest view: rehearse the next movement's form and study its muscles while
+ * recovering. Shows the form animation, what each muscle does, and safety notes.
+ */
+function RestPanel({ step, muscleLookup }: { step: SessionStep; muscleLookup: MuscleLookup }) {
+  const muscleEntries = useMemo(() => {
+    const names = [...(step.primaryMuscles ?? []), ...(step.secondaryMuscles ?? [])]
+    const seen = new Set<string>()
+    return names
+      .filter((n) => (seen.has(n.toLowerCase()) ? false : (seen.add(n.toLowerCase()), true)))
+      .map((n) => muscleLookup(n))
+      .filter((m): m is MuscleDto => m != null)
+  }, [step.primaryMuscles, step.secondaryMuscles, muscleLookup])
+
   return (
     <div className="player-info rest-panel">
       <h1 className="player-title">Rest</h1>
       {step.exerciseName && (
         <>
-          <p className="rest-next-label muted">Up next</p>
+          <p className="rest-next-label muted">Up next — rehearse the form</p>
           <p className="rest-next-name">{step.exerciseName}</p>
         </>
       )}
-      {step.subtitle && <p className="player-subtitle">{step.subtitle}</p>}
+      {step.exerciseName && (
+        <ExerciseAnimation animationRef={step.animationRef} video={step.video} name={step.exerciseName} />
+      )}
       <TargetMuscles primary={step.primaryMuscles} secondary={step.secondaryMuscles} compact />
+
       {step.cue && <p className="player-cue">💡 {step.cue}</p>}
+      {step.safetyTips && (
+        <p className="rest-tip">
+          <span className="rest-tip-label">Safety</span> {step.safetyTips}
+        </p>
+      )}
       {step.commonMistakes && (
         <p className="rest-tip">
           <span className="rest-tip-label">Avoid</span> {step.commonMistakes}
@@ -336,6 +377,19 @@ function RestPanel({ step }: { step: SessionStep }) {
         <p className="rest-tip">
           <span className="rest-tip-label">Why</span> {step.benefits}
         </p>
+      )}
+
+      {muscleEntries.length > 0 && (
+        <div className="rest-muscles">
+          <p className="rest-muscles-head muted">Muscles worked — read while you recover</p>
+          {muscleEntries.map((m) => (
+            <div key={m.id} className="rest-muscle">
+              <span className="rest-muscle-name">{m.name}</span>
+              <span className="rest-muscle-fn">{m.function}</span>
+              {m.injuryNotes && <span className="rest-muscle-injury">⚠ {m.injuryNotes}</span>}
+            </div>
+          ))}
+        </div>
       )}
     </div>
   )
