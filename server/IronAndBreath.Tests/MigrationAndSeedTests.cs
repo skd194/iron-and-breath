@@ -59,7 +59,7 @@ public class MigrationAndSeedTests : IDisposable
     {
         // Dynamic lifts get breathing cues, muscles and a structured tempo; holds
         // get a breathing note and no tempo.
-        var bench = _db.Exercises.Single(e => e.Id == 1);
+        var bench = _db.Exercises.Single(e => e.Name == "Flat Barbell Bench Press");
         bench.PrimaryMuscles.Should().Contain("Chest");
         bench.BreathingConcentric.Should().Be("Exhale");
         bench.BreathingEccentric.Should().Be("Inhale");

@@ -372,7 +372,7 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            Id = 9001,
                             AnimationRef = "flat-barbell-bench-press",
                             BaseSets = 4,
                             Benefits = "The foundational horizontal press for chest and triceps mass.",
@@ -391,11 +391,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 3s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 3,
-                            WorkoutDayId = 1
+                            WorkoutDayId = 9001
                         },
                         new
                         {
-                            Id = 2,
+                            Id = 9002,
                             AnimationRef = "incline-dumbbell-press",
                             BaseSets = 3,
                             Benefits = "Targets the upper chest the flat press under-trains.",
@@ -414,11 +414,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 2s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 2,
-                            WorkoutDayId = 1
+                            WorkoutDayId = 9001
                         },
                         new
                         {
-                            Id = 3,
+                            Id = 9003,
                             AnimationRef = "incline-dumbbell-flye",
                             BaseSets = 3,
                             Benefits = "Isolates the chest through a long stretch for extra hypertrophy.",
@@ -437,11 +437,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 3s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 3,
-                            WorkoutDayId = 1
+                            WorkoutDayId = 9001
                         },
                         new
                         {
-                            Id = 4,
+                            Id = 9004,
                             AnimationRef = "seated-dumbbell-shoulder-press",
                             BaseSets = 3,
                             Benefits = "Builds overhead pressing strength and delt size.",
@@ -460,11 +460,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 2s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 2,
-                            WorkoutDayId = 1
+                            WorkoutDayId = 9001
                         },
                         new
                         {
-                            Id = 5,
+                            Id = 9005,
                             AnimationRef = "lateral-raise",
                             BaseSets = 3,
                             Benefits = "Widens the shoulders by isolating the side delts.",
@@ -483,11 +483,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 2s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 2,
-                            WorkoutDayId = 1
+                            WorkoutDayId = 9001
                         },
                         new
                         {
-                            Id = 6,
+                            Id = 9006,
                             AnimationRef = "overhead-triceps-extension",
                             BaseSets = 3,
                             Benefits = "Hits the long head of the triceps through a deep stretch.",
@@ -506,11 +506,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 3s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 3,
-                            WorkoutDayId = 1
+                            WorkoutDayId = 9001
                         },
                         new
                         {
-                            Id = 7,
+                            Id = 9007,
                             AnimationRef = "push-ups",
                             BaseSets = 2,
                             Benefits = "A bodyweight finisher to fully fatigue the chest and triceps.",
@@ -527,11 +527,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 2s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 2,
-                            WorkoutDayId = 1
+                            WorkoutDayId = 9001
                         },
                         new
                         {
-                            Id = 8,
+                            Id = 9008,
                             AnimationRef = "barbell-bent-over-row",
                             BaseSets = 4,
                             Benefits = "The primary mass builder for the whole back.",
@@ -550,11 +550,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 2s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 2,
-                            WorkoutDayId = 2
+                            WorkoutDayId = 9002
                         },
                         new
                         {
-                            Id = 9,
+                            Id = 9009,
                             AnimationRef = "one-arm-dumbbell-row",
                             BaseSets = 3,
                             Benefits = "Unilateral row that fixes left/right imbalances.",
@@ -573,11 +573,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 2s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 2,
-                            WorkoutDayId = 2
+                            WorkoutDayId = 9002
                         },
                         new
                         {
-                            Id = 10,
+                            Id = 9010,
                             AnimationRef = "resistance-rope-face-pull",
                             BaseSets = 3,
                             Benefits = "Bulletproofs the shoulders and improves posture.",
@@ -596,11 +596,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 2s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 2,
-                            WorkoutDayId = 2
+                            WorkoutDayId = 9002
                         },
                         new
                         {
-                            Id = 11,
+                            Id = 9011,
                             AnimationRef = "barbell-curl",
                             BaseSets = 3,
                             Benefits = "The classic mass builder for the biceps.",
@@ -619,11 +619,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 3s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 3,
-                            WorkoutDayId = 2
+                            WorkoutDayId = 9002
                         },
                         new
                         {
-                            Id = 12,
+                            Id = 9012,
                             AnimationRef = "hammer-curl",
                             BaseSets = 3,
                             Benefits = "Builds the brachialis for thicker arms and strong forearms.",
@@ -641,11 +641,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 2s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 2,
-                            WorkoutDayId = 2
+                            WorkoutDayId = 9002
                         },
                         new
                         {
-                            Id = 13,
+                            Id = 9013,
                             AnimationRef = "rear-delt-flye",
                             BaseSets = 3,
                             Benefits = "Balances the shoulders and improves posture.",
@@ -664,11 +664,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 2s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 2,
-                            WorkoutDayId = 2
+                            WorkoutDayId = 9002
                         },
                         new
                         {
-                            Id = 14,
+                            Id = 9014,
                             AnimationRef = "superman-back-extension-hold",
                             BaseSets = 3,
                             Benefits = "Strengthens the spinal erectors to relieve back tightness.",
@@ -681,11 +681,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SafetyTips = "Keep the neck neutral; stop if it pinches the lower back.",
                             SecondaryMuscles = "Core",
                             SortOrder = 7,
-                            WorkoutDayId = 2
+                            WorkoutDayId = 9002
                         },
                         new
                         {
-                            Id = 15,
+                            Id = 9015,
                             AnimationRef = "barbell-back-squat",
                             BaseSets = 4,
                             Benefits = "The king of lower-body mass and strength.",
@@ -704,11 +704,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 3s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 3,
-                            WorkoutDayId = 3
+                            WorkoutDayId = 9003
                         },
                         new
                         {
-                            Id = 16,
+                            Id = 9016,
                             AnimationRef = "romanian-deadlift",
                             BaseSets = 4,
                             Benefits = "Builds the hamstrings and glutes and protects the back.",
@@ -727,11 +727,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 3s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 3,
-                            WorkoutDayId = 3
+                            WorkoutDayId = 9003
                         },
                         new
                         {
-                            Id = 17,
+                            Id = 9017,
                             AnimationRef = "bulgarian-split-squat",
                             BaseSets = 3,
                             Benefits = "Unilateral leg builder that also trains balance.",
@@ -750,11 +750,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 2s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 2,
-                            WorkoutDayId = 3
+                            WorkoutDayId = 9003
                         },
                         new
                         {
-                            Id = 18,
+                            Id = 9018,
                             AnimationRef = "walking-lunge",
                             BaseSets = 3,
                             Benefits = "Trains the legs through a long, athletic range.",
@@ -773,11 +773,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 2s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 2,
-                            WorkoutDayId = 3
+                            WorkoutDayId = 9003
                         },
                         new
                         {
-                            Id = 19,
+                            Id = 9019,
                             AnimationRef = "standing-calf-raise",
                             BaseSets = 4,
                             Benefits = "Builds the calves, which need high reps and a strong stretch.",
@@ -796,11 +796,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 2,
                             TempoPauseSeconds = 1,
-                            WorkoutDayId = 3
+                            WorkoutDayId = 9003
                         },
                         new
                         {
-                            Id = 20,
+                            Id = 9020,
                             AnimationRef = "plank-hold",
                             BaseSets = 3,
                             Benefits = "Builds deep core stability that protects the spine.",
@@ -813,11 +813,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SafetyTips = "Keep a neutral neck and stop before the lower back sags.",
                             SecondaryMuscles = "Shoulders,Glutes",
                             SortOrder = 6,
-                            WorkoutDayId = 3
+                            WorkoutDayId = 9003
                         },
                         new
                         {
-                            Id = 21,
+                            Id = 9021,
                             AnimationRef = "lying-leg-raise",
                             BaseSets = 3,
                             Benefits = "Targets the lower abs.",
@@ -836,11 +836,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 2s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 2,
-                            WorkoutDayId = 3
+                            WorkoutDayId = 9003
                         },
                         new
                         {
-                            Id = 22,
+                            Id = 9022,
                             AnimationRef = "skipping-warm-up-intervals",
                             BaseSets = 1,
                             Benefits = "Raises the heart rate and primes the whole body.",
@@ -853,11 +853,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SafetyTips = "Land softly through the balls of the feet to spare the knees.",
                             SecondaryMuscles = "Core",
                             SortOrder = 1,
-                            WorkoutDayId = 4
+                            WorkoutDayId = 9004
                         },
                         new
                         {
-                            Id = 23,
+                            Id = 9023,
                             AnimationRef = "dumbbell-thruster",
                             BaseSets = 4,
                             Benefits = "A full-body compound that burns a lot in little time.",
@@ -876,11 +876,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 2s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 2,
-                            WorkoutDayId = 4
+                            WorkoutDayId = 9004
                         },
                         new
                         {
-                            Id = 24,
+                            Id = 9024,
                             AnimationRef = "dumbbell-deadlift",
                             BaseSets = 3,
                             Benefits = "Trains the posterior chain safely with lighter load.",
@@ -899,11 +899,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 2s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 2,
-                            WorkoutDayId = 4
+                            WorkoutDayId = 9004
                         },
                         new
                         {
-                            Id = 25,
+                            Id = 9025,
                             AnimationRef = "renegade-row",
                             BaseSets = 3,
                             Benefits = "Combines a row with a hard anti-rotation core challenge.",
@@ -922,11 +922,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 2s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 2,
-                            WorkoutDayId = 4
+                            WorkoutDayId = 9004
                         },
                         new
                         {
-                            Id = 26,
+                            Id = 9026,
                             AnimationRef = "push-ups",
                             BaseSets = 3,
                             Benefits = "Bodyweight pressing volume for conditioning.",
@@ -943,11 +943,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 2s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 2,
-                            WorkoutDayId = 4
+                            WorkoutDayId = 9004
                         },
                         new
                         {
-                            Id = 27,
+                            Id = 9027,
                             AnimationRef = "russian-twist",
                             BaseSets = 3,
                             Benefits = "Builds rotational core strength and the obliques.",
@@ -966,11 +966,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             Tempo = "Up 1s · Down 1s",
                             TempoConcentricSeconds = 1,
                             TempoEccentricSeconds = 1,
-                            WorkoutDayId = 4
+                            WorkoutDayId = 9004
                         },
                         new
                         {
-                            Id = 28,
+                            Id = 9028,
                             AnimationRef = "skipping-finisher",
                             BaseSets = 1,
                             Benefits = "Caps the session with a conditioning burst.",
@@ -983,11 +983,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SafetyTips = "Keep landings soft; stop if the calves cramp.",
                             SecondaryMuscles = "Core",
                             SortOrder = 7,
-                            WorkoutDayId = 4
+                            WorkoutDayId = 9004
                         },
                         new
                         {
-                            Id = 29,
+                            Id = 9029,
                             AnimationRef = "cat-cow",
                             BaseSets = 1,
                             Benefits = "Mobilises the whole spine and eases back stiffness.",
@@ -1000,11 +1000,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SafetyTips = "Move only as far as comfortable.",
                             SecondaryMuscles = "Lower Back",
                             SortOrder = 1,
-                            WorkoutDayId = 5
+                            WorkoutDayId = 9005
                         },
                         new
                         {
-                            Id = 30,
+                            Id = 9030,
                             AnimationRef = "child-s-pose",
                             BaseSets = 1,
                             Benefits = "Gently stretches the back and lats and calms the nervous system.",
@@ -1017,11 +1017,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SafetyTips = "Widen the knees if the belly or hips feel cramped.",
                             SecondaryMuscles = "Shoulders",
                             SortOrder = 2,
-                            WorkoutDayId = 5
+                            WorkoutDayId = 9005
                         },
                         new
                         {
-                            Id = 31,
+                            Id = 9031,
                             AnimationRef = "downward-dog",
                             BaseSets = 1,
                             Benefits = "Stretches the whole back line — calves, hamstrings, spine.",
@@ -1034,11 +1034,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SafetyTips = "Bend the knees as needed to keep the spine long.",
                             SecondaryMuscles = "Shoulders,Back",
                             SortOrder = 3,
-                            WorkoutDayId = 5
+                            WorkoutDayId = 9005
                         },
                         new
                         {
-                            Id = 32,
+                            Id = 9032,
                             AnimationRef = "cobra-sphinx",
                             BaseSets = 1,
                             Benefits = "Counters hunching and gently extends the lower back.",
@@ -1051,11 +1051,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SafetyTips = "Keep the lift gentle; no sharp lower-back pinch.",
                             SecondaryMuscles = "Chest",
                             SortOrder = 4,
-                            WorkoutDayId = 5
+                            WorkoutDayId = 9005
                         },
                         new
                         {
-                            Id = 33,
+                            Id = 9033,
                             AnimationRef = "thread-the-needle",
                             BaseSets = 1,
                             Benefits = "Opens the upper back and shoulders.",
@@ -1068,11 +1068,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SafetyTips = "Keep weight evenly distributed; move slowly.",
                             SecondaryMuscles = "Shoulders",
                             SortOrder = 5,
-                            WorkoutDayId = 5
+                            WorkoutDayId = 9005
                         },
                         new
                         {
-                            Id = 34,
+                            Id = 9034,
                             AnimationRef = "supine-spinal-twist",
                             BaseSets = 1,
                             Benefits = "Releases the lower back and obliques — great for tightness.",
@@ -1085,11 +1085,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SafetyTips = "Keep both shoulders on the floor; let gravity do the work.",
                             SecondaryMuscles = "Glutes,Spinal Erectors",
                             SortOrder = 6,
-                            WorkoutDayId = 5
+                            WorkoutDayId = 9005
                         },
                         new
                         {
-                            Id = 35,
+                            Id = 9035,
                             AnimationRef = "seated-forward-fold",
                             BaseSets = 1,
                             Benefits = "Lengthens the hamstrings and the whole back line.",
@@ -1102,11 +1102,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SafetyTips = "Bend the knees slightly; lead with the chest, not the head.",
                             SecondaryMuscles = "Calves",
                             SortOrder = 7,
-                            WorkoutDayId = 5
+                            WorkoutDayId = 9005
                         },
                         new
                         {
-                            Id = 36,
+                            Id = 9036,
                             AnimationRef = "pigeon-pose",
                             BaseSets = 1,
                             Benefits = "Opens tight hips and glutes that pull on the lower back.",
@@ -1119,11 +1119,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SafetyTips = "Prop a cushion under the hip to keep it level.",
                             SecondaryMuscles = "Lower Back",
                             SortOrder = 8,
-                            WorkoutDayId = 5
+                            WorkoutDayId = 9005
                         },
                         new
                         {
-                            Id = 37,
+                            Id = 9037,
                             AnimationRef = "standing-hamstring-hip-flexor-stretch",
                             BaseSets = 1,
                             Benefits = "Balances the front and back of the hips for a neutral pelvis.",
@@ -1136,11 +1136,11 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SafetyTips = "Ease in gradually; never bounce.",
                             SecondaryMuscles = "Quadriceps",
                             SortOrder = 9,
-                            WorkoutDayId = 5
+                            WorkoutDayId = 9005
                         },
                         new
                         {
-                            Id = 38,
+                            Id = 9038,
                             AnimationRef = "neck-shoulder-release",
                             BaseSets = 1,
                             Benefits = "Releases desk-and-training tension in the neck and traps.",
@@ -1153,7 +1153,7 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SafetyTips = "Use only light pressure; the neck is delicate.",
                             SecondaryMuscles = "Shoulders",
                             SortOrder = 10,
-                            WorkoutDayId = 5
+                            WorkoutDayId = 9005
                         });
                 });
 
@@ -1959,7 +1959,7 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            Id = 9001,
                             Focus = "Horizontal + overhead pressing",
                             IsArchived = false,
                             Name = "Push · Chest / Shoulders / Triceps",
@@ -1968,7 +1968,7 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = 2,
+                            Id = 9002,
                             Focus = "Rows, pulls, curls, back health",
                             IsArchived = false,
                             Name = "Pull · Back / Biceps / Rear Delts",
@@ -1977,7 +1977,7 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = 3,
+                            Id = 9003,
                             Focus = "Squat, hinge, lunge, trunk",
                             IsArchived = false,
                             Name = "Legs + Core",
@@ -1986,7 +1986,7 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = 4,
+                            Id = 9004,
                             Focus = "Compound circuit with skipping",
                             IsArchived = false,
                             Name = "Full-Body Metabolic + Cardio",
@@ -1995,7 +1995,7 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = 5,
+                            Id = 9005,
                             Focus = "Full-body stretch, back-focused recovery",
                             IsArchived = false,
                             Name = "Mobility & Yoga",

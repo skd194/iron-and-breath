@@ -429,8 +429,13 @@ public static class SeedData
 
     // ---- Builders ----
 
+    // Seeded WorkoutDay/Exercise templates live in a high Id range so they never
+    // collide with user-owned rows (which auto-increment from low Ids) when this
+    // reseed migration is applied over an existing database.
+    private const int SeedBase = 9000;
+
     private static WorkoutDay Day(int id, string name, string focus, int sortOrder, DayOfWeek day)
-        => new() { Id = id, Name = name, Focus = focus, SortOrder = sortOrder, ScheduledDayOfWeek = day };
+        => new() { Id = SeedBase + id, Name = name, Focus = focus, SortOrder = sortOrder, ScheduledDayOfWeek = day };
 
     private static Muscle Mu(int id, string name, string group, string function, string injury)
         => new() { Id = id, Name = name, Group = group, Function = function, InjuryNotes = injury };
@@ -452,8 +457,8 @@ public static class SeedData
         bool hold = false, string? holdBreath = null)
         => new()
         {
-            Id = id,
-            WorkoutDayId = dayId,
+            Id = SeedBase + id,
+            WorkoutDayId = SeedBase + dayId,
             Name = name,
             TargetRepsLow = low,
             TargetRepsHigh = high,
