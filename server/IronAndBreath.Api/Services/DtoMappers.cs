@@ -16,6 +16,7 @@ public static class DtoMappers
             day.Name,
             day.Focus,
             day.SortOrder,
+            day.ScheduledDayOfWeek,
             day.Exercises
                 .OrderBy(e => e.SortOrder)
                 .Select(e => e.ToDto(videos))
@@ -36,10 +37,16 @@ public static class DtoMappers
             SplitMuscles(exercise.SecondaryMuscles),
             ToBreathing(exercise),
             exercise.Tempo,
+            ToTempoSpec(exercise),
             exercise.Benefits,
             exercise.CommonMistakes,
             exercise.SafetyTips,
             exercise.AnimationRef);
+
+    private static TempoDto? ToTempoSpec(Exercise e)
+        => e.TempoConcentricSeconds is null && e.TempoEccentricSeconds is null && e.TempoPauseSeconds is null
+            ? null
+            : new TempoDto(e.TempoConcentricSeconds, e.TempoEccentricSeconds, e.TempoPauseSeconds);
 
     /// <summary>Splits the comma-separated muscle storage into a trimmed list (empty when null).</summary>
     private static IReadOnlyList<string> SplitMuscles(string? csv)

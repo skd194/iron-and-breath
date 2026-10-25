@@ -1,8 +1,8 @@
 namespace IronAndBreath.Api.Dtos;
 
-public record CreateWorkoutDayRequest(string Name, string? Focus);
+public record CreateWorkoutDayRequest(string Name, string? Focus, DayOfWeek? ScheduledDayOfWeek = null);
 
-public record UpdateWorkoutDayRequest(string Name, string? Focus);
+public record UpdateWorkoutDayRequest(string Name, string? Focus, DayOfWeek? ScheduledDayOfWeek = null);
 
 public record ReorderRequest(IReadOnlyList<int> OrderedIds);
 
@@ -15,6 +15,9 @@ public record UpsertExerciseRequest(
     string? Cue,
     int? VideoId,
     // ---- Coaching metadata (all optional) ----
+    int? TempoConcentricSeconds = null,
+    int? TempoEccentricSeconds = null,
+    int? TempoPauseSeconds = null,
     string? BreathingConcentric = null,
     string? BreathingEccentric = null,
     string? BreathingNotes = null,

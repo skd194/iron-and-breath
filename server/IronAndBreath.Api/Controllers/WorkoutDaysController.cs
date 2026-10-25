@@ -70,6 +70,7 @@ public class WorkoutDaysController : ControllerBase
             Name = request.Name.Trim(),
             Focus = request.Focus?.Trim() ?? string.Empty,
             SortOrder = nextOrder + 1,
+            ScheduledDayOfWeek = request.ScheduledDayOfWeek,
         };
         _db.WorkoutDays.Add(day);
         await _db.SaveChangesAsync(ct);
@@ -93,9 +94,39 @@ public class WorkoutDaysController : ControllerBase
 
         day.Name = request.Name.Trim();
         day.Focus = request.Focus?.Trim() ?? string.Empty;
+        day.ScheduledDayOfWeek = request.ScheduledDayOfWeek;
         await _db.SaveChangesAsync(ct);
 
         return Ok(day.ToDto(_videos));
+    }
+
+    /// <summary>
+    /// Appends the latest seeded program template (days + exercises) to the user's
+    /// own program, skipping any day they already have by name. Non-destructive:
+    /// existing days and their logged history are untouched. Idempotent.
+    /// </summary>
+    [HttpPost("import-template")]
+    public async Task<ActionResult<IReadOnlyList<WorkoutDayDto>>> ImportTemplate(CancellationToken ct)
+    {
+        var templates = await _db.WorkoutDays
+            .AsNoTracking()
+            .Where(d => d.UserId == null)
+            .Include(d => d.Exercises)
+            .OrderBy(d => d.SortOrder)
+            .ToListAsync(ct);
+
+        var ownedNames = await OwnedDays().Select(d => d.Name).ToListAsync(ct);
+        var nextOrder = await OwnedDays().Select(d => (int?)d.SortOrder).MaxAsync(ct) ?? 0;
+
+        foreach (var template in templates.Where(t => !ownedNames.Contains(t.Name)))
+        {
+            var day = UserProvisioningService.CloneDay(template, _me.Id);
+            day.SortOrder = ++nextOrder;
+            _db.WorkoutDays.Add(day);
+        }
+        await _db.SaveChangesAsync(ct);
+
+        return await GetAll(ct);
     }
 
     [HttpDelete("{id:int}")]
@@ -227,6 +258,9 @@ public class WorkoutDaysController : ControllerBase
         exercise.PrimaryMuscles = JoinMuscles(request.PrimaryMuscles);
         exercise.SecondaryMuscles = JoinMuscles(request.SecondaryMuscles);
         exercise.Tempo = Clean(request.Tempo);
+        exercise.TempoConcentricSeconds = request.TempoConcentricSeconds;
+        exercise.TempoEccentricSeconds = request.TempoEccentricSeconds;
+        exercise.TempoPauseSeconds = request.TempoPauseSeconds;
         exercise.Benefits = Clean(request.Benefits);
         exercise.CommonMistakes = Clean(request.CommonMistakes);
         exercise.SafetyTips = Clean(request.SafetyTips);

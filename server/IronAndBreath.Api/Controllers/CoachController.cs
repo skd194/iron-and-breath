@@ -101,10 +101,12 @@ public class CoachController : ControllerBase
         Response.Headers["X-Accel-Buffering"] = "no";
         HttpContext.Features.Get<IHttpResponseBodyFeature>()?.DisableBuffering();
 
+        var systemPrompt = SystemPrompt + await BuildContextAsync(ct);
+
         var assistant = new System.Text.StringBuilder();
         try
         {
-            await foreach (var chunk in _ai.StreamReplyAsync(SystemPrompt, history, ct))
+            await foreach (var chunk in _ai.StreamReplyAsync(systemPrompt, history, ct))
             {
                 assistant.Append(chunk);
                 await WriteEventAsync(new { type = "delta", text = chunk }, ct);
@@ -133,6 +135,61 @@ public class CoachController : ControllerBase
         }
 
         await WriteEventAsync(new { type = "done" }, ct);
+    }
+
+    /// <summary>
+    /// Builds a dynamic context block (equipment, scheduled program, nutrition
+    /// targets) appended to the system prompt so the coach's advice fits what the
+    /// user actually owns and is doing. Best-effort — missing data is simply omitted.
+    /// </summary>
+    private async Task<string> BuildContextAsync(CancellationToken ct)
+    {
+        var sb = new System.Text.StringBuilder();
+
+        var equipment = await _db.EquipmentItems.AsNoTracking()
+            .Where(e => e.UserId == _me.Id)
+            .OrderBy(e => e.SortOrder)
+            .Select(e => new { e.Name, e.Specs, e.Status })
+            .ToListAsync(ct);
+        if (equipment.Count > 0)
+        {
+            var owned = equipment.Where(e => e.Status == EquipmentStatus.Owned)
+                .Select(e => e.Specs is null ? e.Name : $"{e.Name} ({e.Specs})");
+            sb.Append("\n\nEquipment the user owns: ").Append(string.Join("; ", owned)).Append('.');
+            var planned = equipment.Where(e => e.Status == EquipmentStatus.Planned).Select(e => e.Name).ToList();
+            if (planned.Count > 0)
+            {
+                sb.Append(" Planning to get: ").Append(string.Join("; ", planned)).Append('.');
+            }
+        }
+
+        var days = await _db.WorkoutDays.AsNoTracking()
+            .Where(d => d.UserId == _me.Id)
+            .OrderBy(d => d.SortOrder)
+            .Select(d => new { d.Name, d.ScheduledDayOfWeek })
+            .ToListAsync(ct);
+        if (days.Count > 0)
+        {
+            var scheduled = days.Select(d => d.ScheduledDayOfWeek is null
+                ? d.Name
+                : $"{d.ScheduledDayOfWeek} — {d.Name}");
+            sb.Append("\n\nCurrent weekly program: ").Append(string.Join("; ", scheduled)).Append('.');
+        }
+
+        var profile = await _db.NutritionProfiles.AsNoTracking()
+            .FirstOrDefaultAsync(p => p.UserId == _me.Id, ct);
+        if (profile is not null)
+        {
+            sb.Append("\n\nNutrition: ").Append(profile.DietStyle)
+                .Append($", bodyweight {profile.WeightKg:0.#}kg, protein target {profile.ProteinTargetG}g/day");
+            if (!string.IsNullOrWhiteSpace(profile.Notes))
+            {
+                sb.Append(". ").Append(profile.Notes);
+            }
+            sb.Append('.');
+        }
+
+        return sb.ToString();
     }
 
     private async Task WriteEventAsync(object payload, CancellationToken ct)
