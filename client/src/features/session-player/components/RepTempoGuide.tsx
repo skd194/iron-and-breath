@@ -13,11 +13,10 @@ interface RepTempoGuideProps {
 }
 
 /**
- * The per-rep metronome shown during a work set: calls the current phase
- * (Lift ↑ / Lower ↓ / Hold), counts down the phase, tells the lifter to
- * inhale/exhale, and tracks the rep count — all derived from the exercise's
- * structured tempo and the runner's countdown (no extra timer). Renders nothing
- * when the exercise has no structured tempo (the caller shows a breathing cue).
+ * The per-rep metronome shown during a work set: a big breathing orb that grows on
+ * the inhale and shrinks on the exhale (synced to the rep), the phase call
+ * (Lift ↑ / Lower ↓ / Hold) with a per-phase countdown, and the rep count — all
+ * derived from the exercise's structured tempo and the runner's countdown.
  */
 export function RepTempoGuide({ tempoSpec, reps, breathing, totalSeconds, remainingMs }: RepTempoGuideProps) {
   const tempo = useMemo(() => toRepTempo(tempoSpec), [tempoSpec])
@@ -34,11 +33,30 @@ export function RepTempoGuide({ tempoSpec, reps, breathing, totalSeconds, remain
         ? breathing?.eccentric ?? 'Inhale'
         : 'Hold'
 
+  // The orb grows while inhaling (eccentric/lowering), shrinks while exhaling
+  // (concentric/lifting), and holds at mid-size on a pause.
+  const scale =
+    state.phase === 'eccentric'
+      ? 0.62 + 0.38 * state.phaseProgress
+      : state.phase === 'concentric'
+        ? 1.0 - 0.38 * state.phaseProgress
+        : 0.8
+
   return (
     <div className={`rep-tempo rep-tempo-${state.phase}`} aria-live="polite">
       <div className="rep-tempo-count mono">
         Rep {state.repNumber}
         <span className="rep-tempo-total">/ {state.totalReps}</span>
+      </div>
+
+      {/* Big animated breathing orb */}
+      <div className="rep-breath">
+        <div className="rep-breath-orb" style={{ transform: `scale(${scale.toFixed(3)})` }}>
+          <span className="rep-breath-ring" />
+        </div>
+        <div className="rep-breath-word">
+          🫁 {breathWord}
+        </div>
       </div>
 
       <div className="rep-tempo-phase">
@@ -52,8 +70,6 @@ export function RepTempoGuide({ tempoSpec, reps, breathing, totalSeconds, remain
       <div className="rep-tempo-bar" aria-hidden>
         <span className="rep-tempo-bar-fill" style={{ width: `${state.phaseProgress * 100}%` }} />
       </div>
-
-      <div className="rep-tempo-breath">🫁 {breathWord}</div>
     </div>
   )
 }

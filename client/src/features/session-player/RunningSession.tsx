@@ -9,6 +9,7 @@ import { BreathingIndicator } from './components/BreathingIndicator'
 import { ExerciseAnimation } from './components/ExerciseAnimation'
 import { RepTempoGuide } from './components/RepTempoGuide'
 import { SessionAgenda } from './components/SessionAgenda'
+import { SetLogForm } from './components/SetLogForm'
 import { TargetMuscles } from './components/TargetMuscles'
 import { toRepTempo } from './rep-tempo'
 import type { SessionStep } from './session-plan'
@@ -54,6 +55,8 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
   // Set logs accumulate as each work set actually starts (skipped-past sets are
   // never recorded), keyed by step id so re-entering a set doesn't duplicate.
   const setLogsRef = useRef(new Map<string, CreateSetLogRequest>())
+  // The most recent work step, so the following rest screen can log that set.
+  const lastWorkRef = useRef<SessionStep | null>(null)
   const [finished, setFinished] = useState(false)
   const [confirmExit, setConfirmExit] = useState(false)
 
@@ -77,15 +80,18 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
     onStepStart: (step) => {
       unlockAudio()
       cueTransition()
-      // Record the set as performed (reps default to the plan; weights are
-      // entered via manual log / history for now).
+      // Record the set as performed (reps default to the plan; the user enters
+      // actual weight/reps on the following rest screen).
       if (step.kind === 'work' && step.exerciseId != null && step.setNumber != null) {
-        setLogsRef.current.set(step.id, {
-          exerciseId: step.exerciseId,
-          exerciseName: step.exerciseName ?? null,
-          setNumber: step.setNumber,
-          repsCompleted: step.plannedReps ?? null,
-        })
+        lastWorkRef.current = step
+        if (!setLogsRef.current.has(step.id)) {
+          setLogsRef.current.set(step.id, {
+            exerciseId: step.exerciseId,
+            exerciseName: step.exerciseName ?? null,
+            setNumber: step.setNumber,
+            repsCompleted: step.plannedReps ?? null,
+          })
+        }
       }
     },
     onComplete: () => {
@@ -198,6 +204,16 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
   const progress = step.durationSeconds > 0 ? runner.remainingMs / (step.durationSeconds * 1000) : 0
   const isWork = step.kind === 'work'
   const paused = runner.status === 'paused'
+  const hasTempo = isWork && !!toRepTempo(step.tempoSpec) && (step.plannedReps ?? 0) > 0
+
+  const ring = (
+    <div className="player-ring">
+      <ProgressRing progress={progress} size={240} stroke={14} color={accent}>
+        <div className="timer-value mono">{formatTime(runner.remainingMs)}</div>
+        <div className="timer-kind">{labelForKind(step.kind)}</div>
+      </ProgressRing>
+    </div>
+  )
 
   return (
     <div className="player" style={{ ['--accent' as string]: accent }}>
@@ -238,22 +254,63 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
       <div className="player-body">
         <div className="player-col-main">
           <div className={`player-main${step.isRest ? ' rest' : ''}`}>
-            <div className="player-ring">
-              <ProgressRing progress={progress} size={280} stroke={16} color={accent}>
-                <div className="timer-value mono">{formatTime(runner.remainingMs)}</div>
-                <div className="timer-kind">{labelForKind(step.kind)}</div>
-              </ProgressRing>
+            {/* Heading spans the full width above the two-column stage */}
+            <div className="player-heading">
+              {step.isRest ? (
+                <>
+                  <h1 className="player-title">Rest</h1>
+                  {step.exerciseName && (
+                    <p className="player-subtitle">
+                      Up next — <strong>{step.exerciseName}</strong>
+                    </p>
+                  )}
+                </>
+              ) : (
+                <>
+                  <h1 className="player-title">{step.title}</h1>
+                  {step.subtitle && <p className="player-subtitle">{step.subtitle}</p>}
+                  {isWork && step.repsDisplay && <div className="player-reps">{step.repsDisplay}</div>}
+                </>
+              )}
             </div>
 
-            {isWork ? (
-              <WorkPanel step={step} remainingMs={runner.remainingMs} />
-            ) : step.isRest ? (
-              <RestPanel step={step} muscleLookup={muscleLookup} />
-            ) : (
-              <div className="player-info">
-                <h1 className="player-title">{step.title}</h1>
-                {step.subtitle && <p className="player-subtitle">{step.subtitle}</p>}
+            {isWork || step.isRest ? (
+              <div className="player-stage">
+                <div className="stage-focus">
+                  {ring}
+                  {isWork ? (
+                    hasTempo ? (
+                      <RepTempoGuide
+                        tempoSpec={step.tempoSpec}
+                        reps={step.plannedReps}
+                        breathing={step.breathing}
+                        totalSeconds={step.durationSeconds}
+                        remainingMs={runner.remainingMs}
+                      />
+                    ) : (
+                      <BreathingIndicator breathing={step.breathing} />
+                    )
+                  ) : (
+                    lastWorkRef.current && (
+                      <SetLogForm workStep={lastWorkRef.current} setLogsRef={setLogsRef} />
+                    )
+                  )}
+                </div>
+                <div className="stage-detail">
+                  {isWork ? (
+                    <WorkDetail step={step} />
+                  ) : (
+                    <RestDetail step={step} muscleLookup={muscleLookup} />
+                  )}
+                </div>
               </div>
+            ) : (
+              <>
+                {ring}
+                <div className="player-info">
+                  {step.subtitle && <p className="player-subtitle">{step.subtitle}</p>}
+                </div>
+              </>
             )}
           </div>
 
@@ -308,41 +365,22 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
   )
 }
 
-/**
- * The active-set view. Coaching comes first and stays visible: reps, the
- * breathing/tempo metronome, and the target muscles sit directly under the title,
- * with a compact form clip below so it never buries the guidance.
- */
-function WorkPanel({ step, remainingMs }: { step: SessionStep; remainingMs: number }) {
-  const hasTempo = !!toRepTempo(step.tempoSpec) && (step.plannedReps ?? 0) > 0
+/** Work-set detail column: the form clip, target muscles, and the cue. */
+function WorkDetail({ step }: { step: SessionStep }) {
   return (
-    <div className="player-info">
-      <h1 className="player-title">{step.title}</h1>
-      {step.subtitle && <p className="player-subtitle">{step.subtitle}</p>}
-      {step.repsDisplay && <div className="player-reps">{step.repsDisplay}</div>}
-      {hasTempo ? (
-        <RepTempoGuide
-          tempoSpec={step.tempoSpec}
-          reps={step.plannedReps}
-          breathing={step.breathing}
-          totalSeconds={step.durationSeconds}
-          remainingMs={remainingMs}
-        />
-      ) : (
-        <BreathingIndicator breathing={step.breathing} />
-      )}
+    <div className="player-detail">
+      <ExerciseAnimation animationRef={step.animationRef} video={step.video} name={step.title} />
       <TargetMuscles primary={step.primaryMuscles} secondary={step.secondaryMuscles} />
       {step.cue && <p className="player-cue">💡 {step.cue}</p>}
-      <ExerciseAnimation animationRef={step.animationRef} video={step.video} name={step.title} compact />
     </div>
   )
 }
 
 /**
- * The rest view: rehearse the next movement's form and study its muscles while
- * recovering. Shows the form animation, what each muscle does, and safety notes.
+ * Rest detail column: rehearse the upcoming movement's form and study its muscles
+ * while recovering — the animation, technique tips, and what each muscle does.
  */
-function RestPanel({ step, muscleLookup }: { step: SessionStep; muscleLookup: MuscleLookup }) {
+function RestDetail({ step, muscleLookup }: { step: SessionStep; muscleLookup: MuscleLookup }) {
   const muscleEntries = useMemo(() => {
     const names = [...(step.primaryMuscles ?? []), ...(step.secondaryMuscles ?? [])]
     const seen = new Set<string>()
@@ -353,14 +391,7 @@ function RestPanel({ step, muscleLookup }: { step: SessionStep; muscleLookup: Mu
   }, [step.primaryMuscles, step.secondaryMuscles, muscleLookup])
 
   return (
-    <div className="player-info rest-panel">
-      <h1 className="player-title">Rest</h1>
-      {step.exerciseName && (
-        <>
-          <p className="rest-next-label muted">Up next — rehearse the form</p>
-          <p className="rest-next-name">{step.exerciseName}</p>
-        </>
-      )}
+    <div className="player-detail rest-panel">
       {step.exerciseName && (
         <ExerciseAnimation animationRef={step.animationRef} video={step.video} name={step.exerciseName} />
       )}
