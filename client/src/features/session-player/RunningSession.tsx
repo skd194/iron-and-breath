@@ -203,6 +203,7 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
   const accent = KIND_ACCENT[step.kind]
   const progress = step.durationSeconds > 0 ? runner.remainingMs / (step.durationSeconds * 1000) : 0
   const isWork = step.kind === 'work'
+  const isRestBetween = step.kind === 'rest-set' || step.kind === 'rest-exercise'
   const paused = runner.status === 'paused'
   const hasTempo = isWork && !!toRepTempo(step.tempoSpec) && (step.plannedReps ?? 0) > 0
 
@@ -253,10 +254,16 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
       {/* Body: timer + info on the left, full plan list on the right (below on mobile) */}
       <div className="player-body">
         <div className="player-col-main">
-          <div className={`player-main${step.isRest ? ' rest' : ''}`}>
-            {/* Heading spans the full width above the two-column stage */}
+          <div className={`player-main ${isWork ? 'work' : isRestBetween ? 'rest' : 'warmup'}`}>
+            {/* Heading spans the full width above the stage */}
             <div className="player-heading">
-              {step.isRest ? (
+              {isWork ? (
+                <>
+                  <h1 className="player-title">{step.title}</h1>
+                  {step.subtitle && <p className="player-subtitle">{step.subtitle}</p>}
+                  {step.repsDisplay && <div className="player-reps">{step.repsDisplay}</div>}
+                </>
+              ) : isRestBetween ? (
                 <>
                   <h1 className="player-title">Rest</h1>
                   {step.exerciseName && (
@@ -267,50 +274,50 @@ export function RunningSession({ steps, dayId, dayName, phaseNumber, weekNumber 
                 </>
               ) : (
                 <>
+                  <span className="warmup-label">Warm-up</span>
                   <h1 className="player-title">{step.title}</h1>
                   {step.subtitle && <p className="player-subtitle">{step.subtitle}</p>}
-                  {isWork && step.repsDisplay && <div className="player-reps">{step.repsDisplay}</div>}
                 </>
               )}
             </div>
 
-            {isWork || step.isRest ? (
+            {isWork ? (
               <div className="player-stage">
                 <div className="stage-focus">
                   {ring}
-                  {isWork ? (
-                    hasTempo ? (
-                      <RepTempoGuide
-                        tempoSpec={step.tempoSpec}
-                        reps={step.plannedReps}
-                        breathing={step.breathing}
-                        totalSeconds={step.durationSeconds}
-                        remainingMs={runner.remainingMs}
-                      />
-                    ) : (
-                      <BreathingIndicator breathing={step.breathing} />
-                    )
+                  {hasTempo ? (
+                    <RepTempoGuide
+                      tempoSpec={step.tempoSpec}
+                      reps={step.plannedReps}
+                      breathing={step.breathing}
+                      totalSeconds={step.durationSeconds}
+                      remainingMs={runner.remainingMs}
+                    />
                   ) : (
-                    lastWorkRef.current && (
-                      <SetLogForm workStep={lastWorkRef.current} setLogsRef={setLogsRef} />
-                    )
+                    <BreathingIndicator breathing={step.breathing} />
                   )}
                 </div>
                 <div className="stage-detail">
-                  {isWork ? (
-                    <WorkDetail step={step} />
-                  ) : (
-                    <RestDetail step={step} muscleLookup={muscleLookup} />
-                  )}
+                  <WorkDetail step={step} />
                 </div>
               </div>
-            ) : (
+            ) : isRestBetween ? (
               <>
-                {ring}
-                <div className="player-info">
-                  {step.subtitle && <p className="player-subtitle">{step.subtitle}</p>}
+                <div className="player-stage">
+                  <div className="stage-focus">
+                    {ring}
+                    {lastWorkRef.current && (
+                      <SetLogForm workStep={lastWorkRef.current} setLogsRef={setLogsRef} />
+                    )}
+                  </div>
+                  <div className="stage-detail">
+                    <RestDetail step={step} muscleLookup={muscleLookup} />
+                  </div>
                 </div>
+                <RestMuscles step={step} muscleLookup={muscleLookup} />
               </>
+            ) : (
+              <div className="warmup-view">{ring}</div>
             )}
           </div>
 
@@ -377,19 +384,10 @@ function WorkDetail({ step }: { step: SessionStep }) {
 }
 
 /**
- * Rest detail column: rehearse the upcoming movement's form and study its muscles
- * while recovering — the animation, technique tips, and what each muscle does.
+ * Rest detail column: rehearse the upcoming movement's form and read its technique
+ * tips while recovering — the animation, cue, safety and "why".
  */
-function RestDetail({ step, muscleLookup }: { step: SessionStep; muscleLookup: MuscleLookup }) {
-  const muscleEntries = useMemo(() => {
-    const names = [...(step.primaryMuscles ?? []), ...(step.secondaryMuscles ?? [])]
-    const seen = new Set<string>()
-    return names
-      .filter((n) => (seen.has(n.toLowerCase()) ? false : (seen.add(n.toLowerCase()), true)))
-      .map((n) => muscleLookup(n))
-      .filter((m): m is MuscleDto => m != null)
-  }, [step.primaryMuscles, step.secondaryMuscles, muscleLookup])
-
+function RestDetail({ step, muscleLookup: _muscleLookup }: { step: SessionStep; muscleLookup: MuscleLookup }) {
   return (
     <div className="player-detail rest-panel">
       {step.exerciseName && (
@@ -413,19 +411,35 @@ function RestDetail({ step, muscleLookup }: { step: SessionStep; muscleLookup: M
           <span className="rest-tip-label">Why</span> {step.benefits}
         </p>
       )}
+    </div>
+  )
+}
 
-      {muscleEntries.length > 0 && (
-        <div className="rest-muscles">
-          <p className="rest-muscles-head muted">Muscles worked — read while you recover</p>
-          {muscleEntries.map((m) => (
-            <div key={m.id} className="rest-muscle">
-              <span className="rest-muscle-name">{m.name}</span>
-              <span className="rest-muscle-fn">{m.function}</span>
-              {m.injuryNotes && <span className="rest-muscle-injury">⚠ {m.injuryNotes}</span>}
-            </div>
-          ))}
-        </div>
-      )}
+/** Full-width grid of "what each muscle does", below the rest stage. */
+function RestMuscles({ step, muscleLookup }: { step: SessionStep; muscleLookup: MuscleLookup }) {
+  const muscleEntries = useMemo(() => {
+    const names = [...(step.primaryMuscles ?? []), ...(step.secondaryMuscles ?? [])]
+    const seen = new Set<string>()
+    return names
+      .filter((n) => (seen.has(n.toLowerCase()) ? false : (seen.add(n.toLowerCase()), true)))
+      .map((n) => muscleLookup(n))
+      .filter((m): m is MuscleDto => m != null)
+  }, [step.primaryMuscles, step.secondaryMuscles, muscleLookup])
+
+  if (muscleEntries.length === 0) return null
+
+  return (
+    <div className="rest-muscles-section">
+      <p className="rest-muscles-head muted">Muscles worked — read while you recover</p>
+      <div className="rest-muscles-grid">
+        {muscleEntries.map((m) => (
+          <div key={m.id} className="rest-muscle">
+            <span className="rest-muscle-name">{m.name}</span>
+            <span className="rest-muscle-fn">{m.function}</span>
+            {m.injuryNotes && <span className="rest-muscle-injury">⚠ {m.injuryNotes}</span>}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

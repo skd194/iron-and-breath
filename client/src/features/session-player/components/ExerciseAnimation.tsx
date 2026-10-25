@@ -20,24 +20,38 @@ interface ExerciseAnimationProps {
 export function ExerciseAnimation({ animationRef, video, name, compact = false }: ExerciseAnimationProps) {
   const frames = framesFor(animationRef)
   const cls = `exercise-animation${compact ? ' compact' : ''}`
+  const ytUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${name} proper form technique`)}`
 
+  // Animated demo (if we have frames) or the curated clip, plus a YouTube link
+  // so the user always has a full video to watch too.
   if (frames) {
-    return <AnimatedFrames frames={frames} name={name} className={cls} />
-  }
-
-  if (video?.embedUrl) {
     return (
-      <div className={compact ? 'exercise-animation-wrap compact' : 'exercise-animation-wrap'}>
-        <VideoEmbed video={video} />
+      <div className="exercise-demo">
+        <AnimatedFrames frames={frames} name={name} className={cls} />
+        <a className="watch-yt" href={ytUrl} target="_blank" rel="noopener noreferrer">
+          ▶ Watch form on YouTube
+        </a>
       </div>
     )
   }
 
-  const query = encodeURIComponent(`${name} proper form technique`)
+  if (video?.embedUrl) {
+    return (
+      <div className="exercise-demo">
+        <div className={compact ? 'exercise-animation-wrap compact' : 'exercise-animation-wrap'}>
+          <VideoEmbed video={video} />
+        </div>
+        <a className="watch-yt" href={ytUrl} target="_blank" rel="noopener noreferrer">
+          ▶ More on YouTube
+        </a>
+      </div>
+    )
+  }
+
   return (
     <a
       className={`${cls} placeholder video-search`}
-      href={`https://www.youtube.com/results?search_query=${query}`}
+      href={ytUrl}
       target="_blank"
       rel="noopener noreferrer"
     >
