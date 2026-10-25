@@ -106,7 +106,7 @@ export function SetLogForm({ workStep, setLogsRef }: SetLogFormProps) {
       <div className="setlog-fields">
         <label className="setlog-field">
           <span title={perHand ? 'Enter the weight of ONE dumbbell (per hand).' : 'Total weight on the bar / plate.'}>
-            {perHand ? 'Weight / hand (kg)' : 'Weight (kg)'}
+            {perHand ? 'Weight/hand (kg)' : 'Weight (kg)'}
           </span>
           <input
             type="number"

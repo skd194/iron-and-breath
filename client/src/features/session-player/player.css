@@ -827,11 +827,21 @@ a.exercise-animation.video-search:hover {
 .setlog-field {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  justify-content: flex-end;
+  gap: 4px;
   font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   color: var(--text-muted);
+}
+/* Reserve two lines for every label so single- and two-line labels line up. */
+.setlog-field > span {
+  min-height: 2.4em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
 }
 .setlog-field input {
   background: var(--iron-800);
