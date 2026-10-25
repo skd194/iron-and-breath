@@ -36,11 +36,19 @@ export function ExerciseAnimation({ animationRef, video, name, compact = false }
     )
   }
 
+  // No curated clip yet — offer a one-tap search for a form video on YouTube.
+  const query = encodeURIComponent(`${name} proper form technique`)
   return (
-    <div className={`${cls} placeholder`}>
-      <span className="anim-emoji" aria-hidden>🏋️</span>
-      <span className="muted">Animation coming soon</span>
-    </div>
+    <a
+      className={`${cls} placeholder video-search`}
+      href={`https://www.youtube.com/results?search_query=${query}`}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <span className="anim-emoji" aria-hidden>▶</span>
+      <span className="video-search-label">Watch form on YouTube</span>
+      <span className="muted video-search-sub">{name}</span>
+    </a>
   )
 }
 

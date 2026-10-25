@@ -6,7 +6,7 @@
 }
 
 .player {
-  max-width: 1080px;
+  max-width: 1360px;
   margin: 0 auto;
   min-height: 100%;
   padding: var(--sp-5) var(--sp-5) var(--sp-7);
@@ -34,6 +34,11 @@
   max-height: calc(100vh - var(--sp-7));
   display: flex;
   min-height: 0;
+}
+/* Rest/work details span a wide two-column band instead of a thin centre strip. */
+.player-info.rest-panel {
+  max-width: 980px;
+  margin-inline: auto;
 }
 
 .player-top {
@@ -657,12 +662,15 @@
 /* ---- Rest-screen muscle education ---- */
 .rest-muscles {
   width: 100%;
-  max-width: 520px;
-  display: flex;
-  flex-direction: column;
+  max-width: 980px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--sp-2);
   margin-top: var(--sp-2);
   text-align: left;
+}
+.rest-muscles-head {
+  grid-column: 1 / -1;
 }
 .rest-muscles-head {
   margin: 0;
@@ -694,4 +702,28 @@
 .exercise-animation-wrap { width: 100%; display: flex; justify-content: center; }
 .exercise-animation-wrap.compact .video-embed {
   max-width: 300px;
+}
+
+/* "Watch form on YouTube" fallback card (shown when no curated clip exists). */
+a.exercise-animation.video-search {
+  text-decoration: none;
+  cursor: pointer;
+  gap: var(--sp-1);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+a.exercise-animation.video-search:hover {
+  border-color: var(--accent, var(--breath-500));
+  background: color-mix(in srgb, var(--accent, var(--breath-500)) 8%, var(--iron-850));
+}
+.video-search .anim-emoji {
+  color: #ff0033;
+  opacity: 1;
+}
+.video-search-label {
+  font-weight: 650;
+  color: var(--text-strong);
+  font-size: 15px;
+}
+.video-search-sub {
+  font-size: 12px;
 }
