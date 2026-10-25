@@ -1931,6 +1931,9 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -1958,6 +1961,7 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                         {
                             Id = 1,
                             Focus = "Horizontal + overhead pressing",
+                            IsArchived = false,
                             Name = "Push · Chest / Shoulders / Triceps",
                             ScheduledDayOfWeek = 6,
                             SortOrder = 1
@@ -1966,6 +1970,7 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                         {
                             Id = 2,
                             Focus = "Rows, pulls, curls, back health",
+                            IsArchived = false,
                             Name = "Pull · Back / Biceps / Rear Delts",
                             ScheduledDayOfWeek = 0,
                             SortOrder = 2
@@ -1974,6 +1979,7 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                         {
                             Id = 3,
                             Focus = "Squat, hinge, lunge, trunk",
+                            IsArchived = false,
                             Name = "Legs + Core",
                             ScheduledDayOfWeek = 1,
                             SortOrder = 3
@@ -1982,6 +1988,7 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                         {
                             Id = 4,
                             Focus = "Compound circuit with skipping",
+                            IsArchived = false,
                             Name = "Full-Body Metabolic + Cardio",
                             ScheduledDayOfWeek = 3,
                             SortOrder = 4
@@ -1990,6 +1997,7 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                         {
                             Id = 5,
                             Focus = "Full-body stretch, back-focused recovery",
+                            IsArchived = false,
                             Name = "Mobility & Yoga",
                             ScheduledDayOfWeek = 4,
                             SortOrder = 5

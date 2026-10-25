@@ -18,6 +18,13 @@ public class WorkoutDay
     public DayOfWeek? ScheduledDayOfWeek { get; set; }
 
     /// <summary>
+    /// Archived days are hidden from the dashboard, schedule and day picker but
+    /// kept so their logged sessions remain in history. Used when switching to a
+    /// new program without destroying the old days' history.
+    /// </summary>
+    public bool IsArchived { get; set; }
+
+    /// <summary>
     /// Owning user. Null marks a seeded <em>template</em> day that is cloned into
     /// each new user's own editable program; it is never shown to users directly.
     /// </summary>

@@ -17,6 +17,7 @@ public static class DtoMappers
             day.Focus,
             day.SortOrder,
             day.ScheduledDayOfWeek,
+            day.IsArchived,
             day.Exercises
                 .OrderBy(e => e.SortOrder)
                 .Select(e => e.ToDto(videos))

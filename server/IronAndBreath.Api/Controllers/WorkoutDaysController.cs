@@ -27,12 +27,22 @@ public class WorkoutDaysController : ControllerBase
 
     // ---- Reads ----
 
-    /// <summary>The current user's workout days with their exercises and video references.</summary>
+    /// <summary>
+    /// The current user's workout days with their exercises and video references.
+    /// Archived days are excluded unless <paramref name="includeArchived"/> is set.
+    /// </summary>
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<WorkoutDayDto>>> GetAll(CancellationToken ct)
+    public async Task<ActionResult<IReadOnlyList<WorkoutDayDto>>> GetAll(
+        [FromQuery] bool includeArchived,
+        CancellationToken ct)
     {
-        var days = await OwnedDays()
-            .AsNoTracking()
+        var query = OwnedDays().AsNoTracking();
+        if (!includeArchived)
+        {
+            query = query.Where(d => !d.IsArchived);
+        }
+
+        var days = await query
             .Include(d => d.Exercises)
                 .ThenInclude(e => e.Video)
             .OrderBy(d => d.SortOrder)
@@ -102,12 +112,26 @@ public class WorkoutDaysController : ControllerBase
 
     /// <summary>
     /// Appends the latest seeded program template (days + exercises) to the user's
-    /// own program, skipping any day they already have by name. Non-destructive:
-    /// existing days and their logged history are untouched. Idempotent.
+    /// own program, skipping any active day they already have by name. When
+    /// <paramref name="archiveExisting"/> is set, the user's current (non-template)
+    /// days are archived first — a clean "switch to the new plan" that keeps their
+    /// history intact. Non-destructive and idempotent.
     /// </summary>
     [HttpPost("import-template")]
-    public async Task<ActionResult<IReadOnlyList<WorkoutDayDto>>> ImportTemplate(CancellationToken ct)
+    public async Task<ActionResult<IReadOnlyList<WorkoutDayDto>>> ImportTemplate(
+        [FromQuery] bool archiveExisting,
+        CancellationToken ct)
     {
+        if (archiveExisting)
+        {
+            var existing = await OwnedDays().Where(d => !d.IsArchived).ToListAsync(ct);
+            foreach (var d in existing)
+            {
+                d.IsArchived = true;
+            }
+            await _db.SaveChangesAsync(ct);
+        }
+
         var templates = await _db.WorkoutDays
             .AsNoTracking()
             .Where(d => d.UserId == null)
@@ -115,10 +139,11 @@ public class WorkoutDaysController : ControllerBase
             .OrderBy(d => d.SortOrder)
             .ToListAsync(ct);
 
-        var ownedNames = await OwnedDays().Select(d => d.Name).ToListAsync(ct);
+        // Skip templates the user already has as an ACTIVE day (so re-running is idempotent).
+        var activeNames = await OwnedDays().Where(d => !d.IsArchived).Select(d => d.Name).ToListAsync(ct);
         var nextOrder = await OwnedDays().Select(d => (int?)d.SortOrder).MaxAsync(ct) ?? 0;
 
-        foreach (var template in templates.Where(t => !ownedNames.Contains(t.Name)))
+        foreach (var template in templates.Where(t => !activeNames.Contains(t.Name)))
         {
             var day = UserProvisioningService.CloneDay(template, _me.Id);
             day.SortOrder = ++nextOrder;
@@ -126,7 +151,7 @@ public class WorkoutDaysController : ControllerBase
         }
         await _db.SaveChangesAsync(ct);
 
-        return await GetAll(ct);
+        return await GetAll(includeArchived: false, ct);
     }
 
     [HttpDelete("{id:int}")]

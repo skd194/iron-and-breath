@@ -40,6 +40,7 @@ public record WorkoutDayDto(
     string Focus,
     int SortOrder,
     DayOfWeek? ScheduledDayOfWeek,
+    bool IsArchived,
     IReadOnlyList<ExerciseDto> Exercises);
 
 public record PhaseTodayDto(
