@@ -1,8 +1,10 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthContext'
+import { THEMES, useTheme } from '../shared/theme/useTheme'
 
 export function AppLayout() {
   const { user, logout } = useAuth()
+  const { theme, setTheme } = useTheme()
 
   const initial = (user?.displayName || user?.email || '?').charAt(0).toUpperCase()
 
@@ -18,11 +20,26 @@ export function AppLayout() {
               Dashboard
             </NavLink>
             <NavLink to="/coach">Coach</NavLink>
+            <NavLink to="/nutrition">Nutrition</NavLink>
+            <NavLink to="/equipment">Equipment</NavLink>
             <NavLink to="/history">History</NavLink>
             <NavLink to="/log">Log workout</NavLink>
             <NavLink to="/settings">Configure</NavLink>
           </nav>
           <div className="user-menu">
+            <select
+              className="theme-select"
+              value={theme}
+              onChange={(e) => setTheme(e.target.value as (typeof THEMES)[number]['value'])}
+              title="Theme"
+              aria-label="Theme"
+            >
+              {THEMES.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
             <span className="user-chip" title={user?.email}>
               <span className="user-avatar" aria-hidden>
                 {initial}

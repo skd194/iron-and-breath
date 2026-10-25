@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router-dom'
 import { AuthProvider } from './features/auth/AuthContext'
 import { router } from './app/router'
+// Applies the persisted theme (data-theme on <html>) on first import.
+import './shared/theme/useTheme'
 import './styles/global.css'
 
 const queryClient = new QueryClient({
