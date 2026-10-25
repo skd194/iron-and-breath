@@ -47,13 +47,23 @@ export interface SessionStep {
   totalRounds?: number
 }
 
+/**
+ * Strips a leading "N sets x " (or "N sets ") from a rep display so the text shows
+ * only the per-set target (e.g. "8-12 reps", "to near-failure"). The actual set
+ * count is shown live as "Set X of Y" and in the agenda, computed from the phase,
+ * so keeping it in the text too would contradict it once a phase adds a set.
+ */
+function repTargetText(display: string): string {
+  return display.replace(/^\s*\d+\s*sets?\s*(?:x|×)?\s*/i, '').trim() || display
+}
+
 /** Extracts the coaching metadata carried on each step from an exercise. */
 function metaOf(ex: ExerciseDto) {
   return {
     exerciseId: ex.id,
     plannedReps: ex.targetRepsHigh ?? ex.targetRepsLow ?? null,
     exerciseName: ex.name,
-    repsDisplay: ex.repsDisplay,
+    repsDisplay: repTargetText(ex.repsDisplay),
     cue: ex.cue,
     video: ex.video,
     primaryMuscles: ex.primaryMuscles,
@@ -128,10 +138,14 @@ export function groupStepsForAgenda(steps: SessionStep[]): AgendaGroup[] {
       }
       cur.endIndex = i
       cur.totalSeconds += s.durationSeconds
+      cur.title = 'Warm-up'
       if (s.kind === 'warmup-round') {
-        cur.title = s.title
-        cur.rounds = (cur.rounds ?? 0) + 1
-        cur.roundSeconds = s.durationSeconds
+        // Only the Surya Namaskar rounds carry a roundNumber; the dynamic
+        // movements don't, so they aren't counted as "rounds".
+        if (s.roundNumber != null) {
+          cur.rounds = (cur.rounds ?? 0) + 1
+          cur.roundSeconds = s.durationSeconds
+        }
       } else {
         cur.transitionSeconds = s.durationSeconds
       }

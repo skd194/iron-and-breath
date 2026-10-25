@@ -77,7 +77,7 @@ export function SessionAgenda({ steps, currentIndex }: SessionAgendaProps) {
                   {isExercise ? (
                     <>
                       {g.sets != null && <span className="agenda-chip">{g.sets} sets</span>}
-                      {g.reps && <span className="agenda-chip reps">{g.reps} reps</span>}
+                      {g.reps && <span className="agenda-chip reps">{g.reps}</span>}
                       {g.workSeconds != null && (
                         <span className="agenda-chip">{fmt(g.workSeconds)} work</span>
                       )}
