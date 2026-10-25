@@ -135,17 +135,38 @@ function SettingsSection() {
 
 function ImportTemplateButton() {
   const importTemplate = useImportTemplate()
-  const run = () => {
-    if (confirm('Add the latest recommended program (new days appended, your current days kept)?')) {
-      importTemplate.mutate(undefined, {
+
+  const switchPlan = () => {
+    if (
+      confirm(
+        'Switch to the recommended 5-day plan?\n\n' +
+          'Your current days will be archived (hidden here but kept in History) and ' +
+          'the new scheduled program — with breathing, tempo and muscle coaching — becomes active.',
+      )
+    ) {
+      importTemplate.mutate(true, {
+        onError: (err) => alert(err instanceof Error ? err.message : 'Could not switch the program.'),
+      })
+    }
+  }
+
+  const append = () => {
+    if (confirm('Add the recommended days alongside your current ones (nothing archived)?')) {
+      importTemplate.mutate(false, {
         onError: (err) => alert(err instanceof Error ? err.message : 'Could not import the template.'),
       })
     }
   }
+
   return (
-    <button className="btn btn-ghost btn-sm" onClick={run} disabled={importTemplate.isPending}>
-      {importTemplate.isPending ? 'Adding…' : '↻ Add latest program'}
-    </button>
+    <>
+      <button className="btn btn-ghost btn-sm" onClick={append} disabled={importTemplate.isPending}>
+        + Append
+      </button>
+      <button className="btn btn-primary btn-sm" onClick={switchPlan} disabled={importTemplate.isPending}>
+        {importTemplate.isPending ? 'Switching…' : '↻ Switch to 5-day plan'}
+      </button>
+    </>
   )
 }
 

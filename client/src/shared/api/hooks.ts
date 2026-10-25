@@ -229,11 +229,19 @@ export function useReorderExercises() {
   })
 }
 
-/** Appends the latest seeded program template to the user's program (non-destructive). */
+/**
+ * Adds the latest seeded program template to the user's program. When
+ * `archiveExisting` is true, the current active days are archived first (a clean
+ * switch to the new plan); otherwise the new days are appended alongside.
+ */
 export function useImportTemplate() {
   const qc = useQueryClient()
-  return useMutation({
-    mutationFn: () => api.post<WorkoutDayDto[]>('/api/workout-days/import-template', {}),
+  return useMutation<WorkoutDayDto[], Error, boolean>({
+    mutationFn: (archiveExisting) =>
+      api.post<WorkoutDayDto[]>(
+        `/api/workout-days/import-template${archiveExisting ? '?archiveExisting=true' : ''}`,
+        {},
+      ),
     onSuccess: () => invalidateProgram(qc),
   })
 }

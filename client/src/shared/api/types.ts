@@ -49,6 +49,8 @@ export interface WorkoutDayDto {
   sortOrder: number
   /** Weekday this day is scheduled on: 0=Sun..6=Sat, or null = unscheduled. */
   scheduledDayOfWeek: number | null
+  /** Archived days are hidden from the dashboard but kept for history. */
+  isArchived: boolean
   exercises: ExerciseDto[]
 }
 
