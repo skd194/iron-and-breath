@@ -51,8 +51,22 @@ public class Exercise
     /// <summary>Secondary muscles worked, stored comma-separated.</summary>
     public string? SecondaryMuscles { get; set; }
 
-    /// <summary>Movement tempo, e.g. "2-0-2" or "slow eccentric".</summary>
+    /// <summary>Movement tempo, e.g. "2-0-2" or "slow eccentric". Free-text, for display.</summary>
     public string? Tempo { get; set; }
+
+    // ---- Structured tempo (drives the per-rep metronome on the work screen) ----
+    // All nullable: when the three are present (with a target rep count) the work
+    // step becomes rep-synced and the RepTempoGuide calls each phase; otherwise the
+    // player falls back to a fixed work timer + static breathing cue.
+
+    /// <summary>Seconds for the concentric ("up"/exertion) phase of one rep.</summary>
+    public int? TempoConcentricSeconds { get; set; }
+
+    /// <summary>Seconds for the eccentric ("down"/return) phase of one rep.</summary>
+    public int? TempoEccentricSeconds { get; set; }
+
+    /// <summary>Seconds paused between phases (e.g. at the stretched or contracted position).</summary>
+    public int? TempoPauseSeconds { get; set; }
 
     /// <summary>Key benefits, shown on the rest/detail screens.</summary>
     public string? Benefits { get; set; }

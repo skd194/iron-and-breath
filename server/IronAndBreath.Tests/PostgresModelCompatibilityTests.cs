@@ -29,7 +29,13 @@ public class PostgresModelCompatibilityTests
         script.Should().Contain("WorkoutDays");
         script.Should().Contain("Exercises");
         script.Should().Contain("ProgramProgressionPhases");
+        // New tables introduced by the revamp translate too.
+        script.Should().Contain("EquipmentItems");
+        script.Should().Contain("Muscles");
+        script.Should().Contain("DietDays");
+        script.Should().Contain("Meals");
+        script.Should().Contain("BodyMetrics");
         // Seed data present as inserts.
-        script.Should().Contain("Upper Body (Push)");
+        script.Should().Contain("Mobility & Yoga");
     }
 }

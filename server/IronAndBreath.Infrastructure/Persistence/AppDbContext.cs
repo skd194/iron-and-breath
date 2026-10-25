@@ -20,6 +20,12 @@ public class AppDbContext : DbContext
     public DbSet<UserProgramSettings> UserProgramSettings => Set<UserProgramSettings>();
     public DbSet<Conversation> Conversations => Set<Conversation>();
     public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
+    public DbSet<EquipmentItem> EquipmentItems => Set<EquipmentItem>();
+    public DbSet<Muscle> Muscles => Set<Muscle>();
+    public DbSet<NutritionProfile> NutritionProfiles => Set<NutritionProfile>();
+    public DbSet<DietDay> DietDays => Set<DietDay>();
+    public DbSet<Meal> Meals => Set<Meal>();
+    public DbSet<BodyMetric> BodyMetrics => Set<BodyMetric>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -39,6 +45,8 @@ public class AppDbContext : DbContext
         {
             b.Property(x => x.Name).IsRequired().HasMaxLength(100);
             b.Property(x => x.Focus).HasMaxLength(200);
+            // Stored as nullable int for Postgres/SQLite portability.
+            b.Property(x => x.ScheduledDayOfWeek).HasConversion<int?>();
             b.HasIndex(x => x.SortOrder);
 
             // Null UserId = seeded template. User-owned days cascade-delete with the user.
@@ -169,6 +177,78 @@ public class AppDbContext : DbContext
                 .HasForeignKey(x => x.ConversationId)
                 .OnDelete(DeleteBehavior.Cascade);
             b.HasIndex(x => x.ConversationId);
+        });
+
+        modelBuilder.Entity<EquipmentItem>(b =>
+        {
+            b.Property(x => x.Name).IsRequired().HasMaxLength(120);
+            b.Property(x => x.Specs).HasMaxLength(400);
+            b.Property(x => x.Category).HasConversion<int>();
+            b.Property(x => x.Status).HasConversion<int>();
+
+            // Null UserId = seeded template; user-owned items cascade with the user.
+            b.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasIndex(x => x.UserId);
+        });
+
+        modelBuilder.Entity<Muscle>(b =>
+        {
+            b.Property(x => x.Name).IsRequired().HasMaxLength(60);
+            b.Property(x => x.Group).HasMaxLength(60);
+            b.Property(x => x.Function).IsRequired().HasMaxLength(600);
+            b.Property(x => x.InjuryNotes).HasMaxLength(600);
+            b.HasIndex(x => x.Name).IsUnique();
+        });
+
+        modelBuilder.Entity<NutritionProfile>(b =>
+        {
+            b.Property(x => x.WeightKg).HasPrecision(5, 2);
+            b.Property(x => x.DietStyle).HasMaxLength(120);
+            b.Property(x => x.Notes).HasMaxLength(1000);
+            b.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasIndex(x => x.UserId).IsUnique();
+        });
+
+        modelBuilder.Entity<DietDay>(b =>
+        {
+            b.Property(x => x.DayOfWeek).HasConversion<int>();
+            b.Property(x => x.Notes).HasMaxLength(400);
+
+            // Null UserId = seeded template cloned at provisioning.
+            b.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasIndex(x => x.UserId);
+        });
+
+        modelBuilder.Entity<Meal>(b =>
+        {
+            b.Property(x => x.Slot).HasConversion<int>();
+            b.Property(x => x.TimeHint).HasMaxLength(60);
+            b.Property(x => x.Items).IsRequired().HasMaxLength(400);
+
+            b.HasOne(x => x.DietDay)
+                .WithMany(d => d.Meals)
+                .HasForeignKey(x => x.DietDayId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasIndex(x => new { x.DietDayId, x.SortOrder });
+        });
+
+        modelBuilder.Entity<BodyMetric>(b =>
+        {
+            b.Property(x => x.WeightKg).HasPrecision(5, 2);
+            b.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasIndex(x => new { x.UserId, x.Date });
         });
 
         SeedData.Apply(modelBuilder);
