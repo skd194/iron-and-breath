@@ -14,6 +14,13 @@ export interface BreathingDto {
   notes: string | null
 }
 
+/** Structured per-rep tempo (seconds) that drives the work-screen metronome. */
+export interface TempoDto {
+  concentricSeconds: number | null
+  eccentricSeconds: number | null
+  pauseSeconds: number | null
+}
+
 export interface ExerciseDto {
   id: number
   name: string
@@ -28,6 +35,7 @@ export interface ExerciseDto {
   secondaryMuscles: string[]
   breathing: BreathingDto | null
   tempo: string | null
+  tempoSpec: TempoDto | null
   benefits: string | null
   commonMistakes: string | null
   safetyTips: string | null
@@ -39,6 +47,8 @@ export interface WorkoutDayDto {
   name: string
   focus: string
   sortOrder: number
+  /** Weekday this day is scheduled on: 0=Sun..6=Sat, or null = unscheduled. */
+  scheduledDayOfWeek: number | null
   exercises: ExerciseDto[]
 }
 
@@ -169,11 +179,13 @@ export interface LoginRequest {
 export interface CreateWorkoutDayRequest {
   name: string
   focus?: string
+  scheduledDayOfWeek?: number | null
 }
 
 export interface UpdateWorkoutDayRequest {
   name: string
   focus?: string
+  scheduledDayOfWeek?: number | null
 }
 
 export interface UpsertExerciseRequest {
@@ -184,6 +196,9 @@ export interface UpsertExerciseRequest {
   baseSets: number
   cue?: string | null
   videoId: number | null
+  tempoConcentricSeconds?: number | null
+  tempoEccentricSeconds?: number | null
+  tempoPauseSeconds?: number | null
   breathingConcentric?: string | null
   breathingEccentric?: string | null
   breathingNotes?: string | null
@@ -215,4 +230,115 @@ export interface CoachStateDto {
   aiEnabled: boolean
   provider: string
   messages: CoachMessageDto[]
+}
+
+// ---- Equipment inventory ----
+
+export type EquipmentCategory =
+  | 'Bench'
+  | 'Barbell'
+  | 'Dumbbell'
+  | 'Plates'
+  | 'Rack'
+  | 'Resistance'
+  | 'Cardio'
+  | 'Bodyweight'
+  | 'Accessory'
+  | 'Other'
+
+export type EquipmentStatus = 'Owned' | 'Planned'
+
+export interface EquipmentItemDto {
+  id: number
+  name: string
+  category: EquipmentCategory
+  specs: string | null
+  status: EquipmentStatus
+  sortOrder: number
+}
+
+export interface UpsertEquipmentRequest {
+  name: string
+  category: EquipmentCategory
+  specs?: string | null
+  status: EquipmentStatus
+}
+
+// ---- Muscle reference catalog ----
+
+export interface MuscleDto {
+  id: number
+  name: string
+  group: string
+  function: string
+  injuryNotes: string | null
+}
+
+// ---- Nutrition ----
+
+export type MealSlot = 'Breakfast' | 'Lunch' | 'Snack' | 'Dinner'
+
+export interface NutritionProfileDto {
+  weightKg: number
+  proteinTargetG: number
+  calorieTarget: number
+  dietStyle: string
+  notes: string | null
+}
+
+export interface UpdateNutritionProfileRequest {
+  weightKg: number
+  proteinTargetG: number
+  calorieTarget: number
+  dietStyle: string
+  notes?: string | null
+}
+
+export interface MealDto {
+  id: number
+  slot: MealSlot
+  timeHint: string | null
+  items: string
+  proteinG: number
+  sortOrder: number
+}
+
+export interface DietDayDto {
+  id: number
+  /** 0=Sun..6=Sat */
+  dayOfWeek: number
+  isFastingDay: boolean
+  notes: string | null
+  totalProteinG: number
+  meals: MealDto[]
+}
+
+export interface NutritionDto {
+  profile: NutritionProfileDto
+  days: DietDayDto[]
+}
+
+export interface UpdateDietDayRequest {
+  isFastingDay: boolean
+  notes?: string | null
+}
+
+export interface UpsertMealRequest {
+  slot: MealSlot
+  timeHint?: string | null
+  items: string
+  proteinG: number
+}
+
+// ---- Bodyweight tracking ----
+
+export interface BodyMetricDto {
+  id: number
+  date: string // yyyy-MM-dd
+  weightKg: number
+}
+
+export interface LogBodyMetricRequest {
+  date: string
+  weightKg: number
 }
