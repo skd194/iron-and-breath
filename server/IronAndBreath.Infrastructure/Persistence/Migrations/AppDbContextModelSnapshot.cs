@@ -248,10 +248,10 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 6,
-                            Category = 5,
-                            Name = "Resistance Ropes",
+                            Category = 7,
+                            Name = "Doorway Pull-up Bar",
                             SortOrder = 6,
-                            Specs = "Attach to the bench for face pulls and presses.",
+                            Specs = "Fits in a doorway — pull-ups, chin-ups and hanging leg raises.",
                             Status = 0
                         },
                         new
@@ -388,8 +388,8 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 1,
                             TargetRepsHigh = 12,
                             TargetRepsLow = 8,
-                            Tempo = "Up 1s · Down 3s",
-                            TempoConcentricSeconds = 1,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
                             TempoEccentricSeconds = 3,
                             WorkoutDayId = 9001
                         },
@@ -411,9 +411,9 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 2,
                             TargetRepsHigh = 12,
                             TargetRepsLow = 10,
-                            Tempo = "Up 1s · Down 2s",
-                            TempoConcentricSeconds = 1,
-                            TempoEccentricSeconds = 2,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
+                            TempoEccentricSeconds = 3,
                             WorkoutDayId = 9001
                         },
                         new
@@ -434,8 +434,8 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 3,
                             TargetRepsHigh = 15,
                             TargetRepsLow = 12,
-                            Tempo = "Up 1s · Down 3s",
-                            TempoConcentricSeconds = 1,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
                             TempoEccentricSeconds = 3,
                             WorkoutDayId = 9001
                         },
@@ -457,9 +457,9 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 4,
                             TargetRepsHigh = 12,
                             TargetRepsLow = 10,
-                            Tempo = "Up 1s · Down 2s",
-                            TempoConcentricSeconds = 1,
-                            TempoEccentricSeconds = 2,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
+                            TempoEccentricSeconds = 3,
                             WorkoutDayId = 9001
                         },
                         new
@@ -480,9 +480,9 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 5,
                             TargetRepsHigh = 20,
                             TargetRepsLow = 15,
-                            Tempo = "Up 1s · Down 2s",
-                            TempoConcentricSeconds = 1,
-                            TempoEccentricSeconds = 2,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
+                            TempoEccentricSeconds = 3,
                             WorkoutDayId = 9001
                         },
                         new
@@ -503,8 +503,8 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 6,
                             TargetRepsHigh = 15,
                             TargetRepsLow = 12,
-                            Tempo = "Up 1s · Down 3s",
-                            TempoConcentricSeconds = 1,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
                             TempoEccentricSeconds = 3,
                             WorkoutDayId = 9001
                         },
@@ -524,9 +524,9 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SafetyTips = "Keep the core braced to protect the lower back.",
                             SecondaryMuscles = "Shoulders,Core",
                             SortOrder = 7,
-                            Tempo = "Up 1s · Down 2s",
-                            TempoConcentricSeconds = 1,
-                            TempoEccentricSeconds = 2,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
+                            TempoEccentricSeconds = 3,
                             WorkoutDayId = 9001
                         },
                         new
@@ -547,9 +547,9 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 1,
                             TargetRepsHigh = 12,
                             TargetRepsLow = 8,
-                            Tempo = "Up 1s · Down 2s",
-                            TempoConcentricSeconds = 1,
-                            TempoEccentricSeconds = 2,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
+                            TempoEccentricSeconds = 3,
                             WorkoutDayId = 9002
                         },
                         new
@@ -570,32 +570,32 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 2,
                             TargetRepsHigh = 12,
                             TargetRepsLow = 10,
-                            Tempo = "Up 1s · Down 2s",
-                            TempoConcentricSeconds = 1,
-                            TempoEccentricSeconds = 2,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
+                            TempoEccentricSeconds = 3,
                             WorkoutDayId = 9002
                         },
                         new
                         {
                             Id = 9010,
-                            AnimationRef = "resistance-rope-face-pull",
+                            AnimationRef = "pull-ups",
                             BaseSets = 3,
-                            Benefits = "Bulletproofs the shoulders and improves posture.",
+                            Benefits = "The best bodyweight back and lat builder — uses your pull-up bar.",
                             BreathingConcentric = "Exhale",
                             BreathingEccentric = "Inhale",
-                            CommonMistakes = "Using too much weight and turning it into a row.",
-                            Cue = "Pull the ropes to your forehead, elbows high, squeeze the rear delts.",
-                            Name = "Resistance-Rope Face Pull",
-                            PrimaryMuscles = "Rear Delts,Traps",
-                            RepsDisplay = "3 sets x 15-20 reps",
-                            SafetyTips = "Keep it light and controlled; this is a health movement.",
-                            SecondaryMuscles = "Back",
+                            CommonMistakes = "Kipping/swinging, half reps, not controlling the descent.",
+                            Cue = "Dead hang from the doorway bar, pull your chin over, lower under control.",
+                            Name = "Pull-ups",
+                            PrimaryMuscles = "Back,Lats",
+                            RepsDisplay = "3 sets x 6-10 reps (or to near-failure)",
+                            SafetyTips = "Full controlled range; use a band or slow negatives if you can't do full reps yet.",
+                            SecondaryMuscles = "Biceps,Rear Delts",
                             SortOrder = 3,
-                            TargetRepsHigh = 20,
-                            TargetRepsLow = 15,
-                            Tempo = "Up 1s · Down 2s",
-                            TempoConcentricSeconds = 1,
-                            TempoEccentricSeconds = 2,
+                            TargetRepsHigh = 10,
+                            TargetRepsLow = 6,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
+                            TempoEccentricSeconds = 3,
                             WorkoutDayId = 9002
                         },
                         new
@@ -616,8 +616,8 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 4,
                             TargetRepsHigh = 12,
                             TargetRepsLow = 10,
-                            Tempo = "Up 1s · Down 3s",
-                            TempoConcentricSeconds = 1,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
                             TempoEccentricSeconds = 3,
                             WorkoutDayId = 9002
                         },
@@ -638,9 +638,9 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 5,
                             TargetRepsHigh = 15,
                             TargetRepsLow = 12,
-                            Tempo = "Up 1s · Down 2s",
-                            TempoConcentricSeconds = 1,
-                            TempoEccentricSeconds = 2,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
+                            TempoEccentricSeconds = 3,
                             WorkoutDayId = 9002
                         },
                         new
@@ -661,9 +661,9 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 6,
                             TargetRepsHigh = 20,
                             TargetRepsLow = 15,
-                            Tempo = "Up 1s · Down 2s",
-                            TempoConcentricSeconds = 1,
-                            TempoEccentricSeconds = 2,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
+                            TempoEccentricSeconds = 3,
                             WorkoutDayId = 9002
                         },
                         new
@@ -701,8 +701,8 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 1,
                             TargetRepsHigh = 12,
                             TargetRepsLow = 8,
-                            Tempo = "Up 1s · Down 3s",
-                            TempoConcentricSeconds = 1,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
                             TempoEccentricSeconds = 3,
                             WorkoutDayId = 9003
                         },
@@ -724,8 +724,8 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 2,
                             TargetRepsHigh = 12,
                             TargetRepsLow = 10,
-                            Tempo = "Up 1s · Down 3s",
-                            TempoConcentricSeconds = 1,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
                             TempoEccentricSeconds = 3,
                             WorkoutDayId = 9003
                         },
@@ -747,9 +747,9 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 3,
                             TargetRepsHigh = 12,
                             TargetRepsLow = 10,
-                            Tempo = "Up 1s · Down 2s",
-                            TempoConcentricSeconds = 1,
-                            TempoEccentricSeconds = 2,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
+                            TempoEccentricSeconds = 3,
                             WorkoutDayId = 9003
                         },
                         new
@@ -770,9 +770,9 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 4,
                             TargetRepsHigh = 12,
                             TargetRepsLow = 12,
-                            Tempo = "Up 1s · Down 2s",
-                            TempoConcentricSeconds = 1,
-                            TempoEccentricSeconds = 2,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
+                            TempoEccentricSeconds = 3,
                             WorkoutDayId = 9003
                         },
                         new
@@ -792,9 +792,9 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 5,
                             TargetRepsHigh = 20,
                             TargetRepsLow = 20,
-                            Tempo = "Up 1s · Down 2s · 1s pause",
-                            TempoConcentricSeconds = 1,
-                            TempoEccentricSeconds = 2,
+                            Tempo = "Up 2s · Down 3s · 1s pause",
+                            TempoConcentricSeconds = 2,
+                            TempoEccentricSeconds = 3,
                             TempoPauseSeconds = 1,
                             WorkoutDayId = 9003
                         },
@@ -818,24 +818,24 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 9021,
-                            AnimationRef = "lying-leg-raise",
+                            AnimationRef = "hanging-leg-raise",
                             BaseSets = 3,
-                            Benefits = "Targets the lower abs.",
+                            Benefits = "A strong lower-ab and grip builder using your pull-up bar.",
                             BreathingConcentric = "Exhale",
                             BreathingEccentric = "Inhale",
-                            CommonMistakes = "Arching the lower back off the floor.",
-                            Cue = "Press the lower back down, raise the legs, lower slowly.",
-                            Name = "Lying Leg Raise",
+                            CommonMistakes = "Swinging the legs up with momentum.",
+                            Cue = "Hang from the doorway bar, raise the legs with control, don't swing.",
+                            Name = "Hanging Leg Raise",
                             PrimaryMuscles = "Core",
-                            RepsDisplay = "3 sets x 15 reps",
-                            SafetyTips = "Keep the lower back pinned down the whole set.",
-                            SecondaryMuscles = "Hip Flexors",
+                            RepsDisplay = "3 sets x 10-15 reps",
+                            SafetyTips = "Keep it controlled; stop if the lower back rounds painfully.",
+                            SecondaryMuscles = "Hip Flexors,Forearms",
                             SortOrder = 7,
                             TargetRepsHigh = 15,
-                            TargetRepsLow = 15,
-                            Tempo = "Up 1s · Down 2s",
-                            TempoConcentricSeconds = 1,
-                            TempoEccentricSeconds = 2,
+                            TargetRepsLow = 10,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
+                            TempoEccentricSeconds = 3,
                             WorkoutDayId = 9003
                         },
                         new
@@ -873,9 +873,9 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 2,
                             TargetRepsHigh = 12,
                             TargetRepsLow = 10,
-                            Tempo = "Up 1s · Down 2s",
-                            TempoConcentricSeconds = 1,
-                            TempoEccentricSeconds = 2,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
+                            TempoEccentricSeconds = 3,
                             WorkoutDayId = 9004
                         },
                         new
@@ -896,9 +896,9 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 3,
                             TargetRepsHigh = 12,
                             TargetRepsLow = 12,
-                            Tempo = "Up 1s · Down 2s",
-                            TempoConcentricSeconds = 1,
-                            TempoEccentricSeconds = 2,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
+                            TempoEccentricSeconds = 3,
                             WorkoutDayId = 9004
                         },
                         new
@@ -919,9 +919,9 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SortOrder = 4,
                             TargetRepsHigh = 10,
                             TargetRepsLow = 10,
-                            Tempo = "Up 1s · Down 2s",
-                            TempoConcentricSeconds = 1,
-                            TempoEccentricSeconds = 2,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
+                            TempoEccentricSeconds = 3,
                             WorkoutDayId = 9004
                         },
                         new
@@ -940,9 +940,9 @@ namespace IronAndBreath.Infrastructure.Persistence.Migrations
                             SafetyTips = "Brace the core to protect the lower back.",
                             SecondaryMuscles = "Shoulders,Core",
                             SortOrder = 5,
-                            Tempo = "Up 1s · Down 2s",
-                            TempoConcentricSeconds = 1,
-                            TempoEccentricSeconds = 2,
+                            Tempo = "Up 2s · Down 3s",
+                            TempoConcentricSeconds = 2,
+                            TempoEccentricSeconds = 3,
                             WorkoutDayId = 9004
                         },
                         new
