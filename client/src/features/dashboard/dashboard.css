@@ -122,7 +122,7 @@
 /* Day picker */
 .daypicker {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: var(--sp-4);
 }
 .daycard {
@@ -182,4 +182,83 @@
   .daypicker {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* ---- Missed heatmap cell ---- */
+.heatmap-cell.missed {
+  background: color-mix(in srgb, var(--danger-500) 55%, var(--heat-0));
+}
+.heatmap-legend {
+  display: flex;
+  gap: var(--sp-4);
+  align-items: center;
+  margin-top: var(--sp-3);
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+.heatmap-legend .dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+.heatmap-legend .dot.done { background: var(--heat-4); }
+.heatmap-legend .dot.missed { background: color-mix(in srgb, var(--danger-500) 55%, var(--heat-0)); }
+.legend-adh { margin-left: auto; }
+
+/* ---- Weekly schedule strip ---- */
+.week-strip {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--sp-2);
+}
+.week-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-3) var(--sp-2);
+  border-radius: var(--r-md);
+  background: var(--iron-850);
+  border: 1px solid var(--iron-800);
+  text-align: center;
+}
+.week-cell.rest { opacity: 0.6; }
+.week-cell.today {
+  border-color: var(--breath-600);
+  box-shadow: 0 0 0 1px var(--breath-600);
+}
+.week-dow {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.week-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-strong);
+  text-decoration: none;
+}
+a.week-name:hover { color: var(--breath-400); }
+
+/* ---- Progress grid (charts) ---- */
+.progress-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+}
+.weight-log {
+  display: flex;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+.weight-log .input { flex: 1; }
+
+@media (max-width: 720px) {
+  .progress-grid { grid-template-columns: 1fr; }
+  .week-strip { grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .week-name { font-size: 10px; }
 }

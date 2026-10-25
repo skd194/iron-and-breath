@@ -6,8 +6,10 @@ import { RegisterPage } from '../features/auth/RegisterPage'
 import { CoachPage } from '../features/coach/CoachPage'
 import { ConfigPage } from '../features/config/ConfigPage'
 import { DashboardPage } from '../features/dashboard/DashboardPage'
+import { EquipmentPage } from '../features/equipment/EquipmentPage'
 import { HistoryPage } from '../features/history/HistoryPage'
 import { ManualLogPage } from '../features/manual-log/ManualLogPage'
+import { NutritionPage } from '../features/nutrition/NutritionPage'
 import { SessionPlayerPage } from '../features/session-player/SessionPlayerPage'
 import { LoadingState } from '../shared/ui/States'
 import { AppLayout } from './AppLayout'
@@ -39,6 +41,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'coach', element: <CoachPage /> },
+      { path: 'nutrition', element: <NutritionPage /> },
+      { path: 'equipment', element: <EquipmentPage /> },
       { path: 'history', element: <HistoryPage /> },
       { path: 'log', element: <ManualLogPage /> },
       { path: 'settings', element: <ConfigPage /> },

@@ -3,6 +3,7 @@ import {
   useCreateDay,
   useDeleteDay,
   useDeleteExercise,
+  useImportTemplate,
   useReorderDays,
   useReorderExercises,
   useSettings,
@@ -15,6 +16,24 @@ import type { ExerciseDto, VideoLibraryItemDto, WorkoutDayDto } from '../../shar
 import { ErrorState, LoadingState } from '../../shared/ui/States'
 import { ExerciseModal } from './ExerciseModal'
 import './config.css'
+
+/** Weekday options for scheduling a day (value '' = unscheduled / rest). */
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+function WeekdaySelect({ value, onChange }: { value: number | null; onChange: (v: number | null) => void }) {
+  return (
+    <select
+      className="input"
+      value={value ?? ''}
+      onChange={(e) => onChange(e.target.value === '' ? null : Number(e.target.value))}
+    >
+      <option value="">Unscheduled (rest)</option>
+      {WEEKDAYS.map((d, i) => (
+        <option key={i} value={i}>{d}</option>
+      ))}
+    </select>
+  )
+}
 
 export function ConfigPage() {
   const daysQ = useWorkoutDays()
@@ -34,7 +53,10 @@ export function ConfigPage() {
           <div className="section-title" style={{ margin: 0 }}>
             Your program
           </div>
-          <AddDayButton />
+          <div className="config-program-tools">
+            <ImportTemplateButton />
+            <AddDayButton />
+          </div>
         </div>
 
         {daysQ.isLoading ? (
@@ -111,21 +133,39 @@ function SettingsSection() {
   )
 }
 
+function ImportTemplateButton() {
+  const importTemplate = useImportTemplate()
+  const run = () => {
+    if (confirm('Add the latest recommended program (new days appended, your current days kept)?')) {
+      importTemplate.mutate(undefined, {
+        onError: (err) => alert(err instanceof Error ? err.message : 'Could not import the template.'),
+      })
+    }
+  }
+  return (
+    <button className="btn btn-ghost btn-sm" onClick={run} disabled={importTemplate.isPending}>
+      {importTemplate.isPending ? 'Adding…' : '↻ Add latest program'}
+    </button>
+  )
+}
+
 function AddDayButton() {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [focus, setFocus] = useState('')
+  const [dow, setDow] = useState<number | null>(null)
   const create = useCreateDay()
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
     if (!name.trim()) return
     create.mutate(
-      { name: name.trim(), focus: focus.trim() || undefined },
+      { name: name.trim(), focus: focus.trim() || undefined, scheduledDayOfWeek: dow },
       {
         onSuccess: () => {
           setName('')
           setFocus('')
+          setDow(null)
           setOpen(false)
         },
       },
@@ -151,6 +191,10 @@ function AddDayButton() {
         <label className="field">
           Focus <span className="muted">(optional)</span>
           <input value={focus} onChange={(e) => setFocus(e.target.value)} />
+        </label>
+        <label className="field">
+          Scheduled day
+          <WeekdaySelect value={dow} onChange={setDow} />
         </label>
         <div className="modal-actions">
           <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>
@@ -181,6 +225,7 @@ function DayCard({
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(day.name)
   const [focus, setFocus] = useState(day.focus)
+  const [dow, setDow] = useState<number | null>(day.scheduledDayOfWeek)
   const [modal, setModal] = useState<{ exercise?: ExerciseDto } | null>(null)
 
   const updateDay = useUpdateDay()
@@ -191,7 +236,7 @@ function DayCard({
 
   const saveDay = () => {
     updateDay.mutate(
-      { id: day.id, body: { name: name.trim() || day.name, focus: focus.trim() } },
+      { id: day.id, body: { name: name.trim() || day.name, focus: focus.trim(), scheduledDayOfWeek: dow } },
       { onSuccess: () => setEditing(false) },
     )
   }
@@ -238,6 +283,7 @@ function DayCard({
               value={focus}
               onChange={(e) => setFocus(e.target.value)}
             />
+            <WeekdaySelect value={dow} onChange={setDow} />
             <div className="config-inline-actions">
               <button className="btn btn-primary btn-sm" onClick={saveDay} disabled={updateDay.isPending}>
                 Save
@@ -250,7 +296,12 @@ function DayCard({
         ) : (
           <>
             <div>
-              <h3 className="config-day-name">{day.name}</h3>
+              <h3 className="config-day-name">
+                {day.name}
+                {day.scheduledDayOfWeek != null && (
+                  <span className="badge badge-accent config-day-sched">{WEEKDAYS[day.scheduledDayOfWeek]}</span>
+                )}
+              </h3>
               {day.focus && <div className="muted config-day-focus">{day.focus}</div>}
             </div>
             <div className="config-day-tools">

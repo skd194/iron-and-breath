@@ -33,6 +33,9 @@ export function ExerciseModal({ dayId, exercise, videos, onClose }: Props) {
   const [primaryMuscles, setPrimaryMuscles] = useState((exercise?.primaryMuscles ?? []).join(', '))
   const [secondaryMuscles, setSecondaryMuscles] = useState((exercise?.secondaryMuscles ?? []).join(', '))
   const [tempo, setTempo] = useState(exercise?.tempo ?? '')
+  const [tempoCon, setTempoCon] = useState<string>(exercise?.tempoSpec?.concentricSeconds?.toString() ?? '')
+  const [tempoEcc, setTempoEcc] = useState<string>(exercise?.tempoSpec?.eccentricSeconds?.toString() ?? '')
+  const [tempoPause, setTempoPause] = useState<string>(exercise?.tempoSpec?.pauseSeconds?.toString() ?? '')
   const [benefits, setBenefits] = useState(exercise?.benefits ?? '')
   const [commonMistakes, setCommonMistakes] = useState(exercise?.commonMistakes ?? '')
   const [safetyTips, setSafetyTips] = useState(exercise?.safetyTips ?? '')
@@ -58,6 +61,9 @@ export function ExerciseModal({ dayId, exercise, videos, onClose }: Props) {
       primaryMuscles: splitMuscles(primaryMuscles),
       secondaryMuscles: splitMuscles(secondaryMuscles),
       tempo: tempo.trim() || null,
+      tempoConcentricSeconds: tempoCon ? Number(tempoCon) : null,
+      tempoEccentricSeconds: tempoEcc ? Number(tempoEcc) : null,
+      tempoPauseSeconds: tempoPause ? Number(tempoPause) : null,
       benefits: benefits.trim() || null,
       commonMistakes: commonMistakes.trim() || null,
       safetyTips: safetyTips.trim() || null,
@@ -156,9 +162,26 @@ export function ExerciseModal({ dayId, exercise, videos, onClose }: Props) {
           </label>
 
           <label className="field">
-            Tempo
-            <input value={tempo} onChange={(e) => setTempo(e.target.value)} placeholder="2-0-2" />
+            Tempo <span className="muted">(display text)</span>
+            <input value={tempo} onChange={(e) => setTempo(e.target.value)} placeholder="Up 1s · Down 3s" />
           </label>
+          <div className="config-row-3">
+            <label className="field">
+              Lift secs (up)
+              <input type="number" min="0" max="10" value={tempoCon} onChange={(e) => setTempoCon(e.target.value)} placeholder="1" />
+            </label>
+            <label className="field">
+              Lower secs (down)
+              <input type="number" min="0" max="10" value={tempoEcc} onChange={(e) => setTempoEcc(e.target.value)} placeholder="3" />
+            </label>
+            <label className="field">
+              Pause secs
+              <input type="number" min="0" max="10" value={tempoPause} onChange={(e) => setTempoPause(e.target.value)} placeholder="0" />
+            </label>
+          </div>
+          <p className="muted" style={{ fontSize: 12, margin: 0 }}>
+            Set lift/lower seconds to drive the per-rep metronome during the workout.
+          </p>
           <label className="field">
             Benefits
             <input value={benefits} onChange={(e) => setBenefits(e.target.value)} />

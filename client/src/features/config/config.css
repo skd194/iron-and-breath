@@ -198,3 +198,6 @@
     align-self: stretch;
   }
 }
+
+.config-program-tools { display: flex; gap: var(--sp-2); align-items: center; }
+.config-day-sched { margin-left: var(--sp-2); font-size: 11px; vertical-align: middle; }

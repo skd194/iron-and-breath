@@ -1,0 +1,58 @@
+.equipment.grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+.equip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--sp-4);
+}
+.equip-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.equip-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.equip-cat {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--accent, var(--breath-500)) 16%, transparent);
+  color: var(--breath-400);
+}
+.equip-name {
+  font-size: 16px;
+  font-weight: 650;
+  color: var(--text-strong);
+}
+.equip-specs { font-size: 13px; }
+.equip-actions,
+.equip-form-actions {
+  display: flex;
+  gap: var(--sp-2);
+  margin-top: auto;
+}
+.equip-form-actions { justify-content: flex-end; }
+.equip-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.equip-form-row {
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+.equip-form-row .field { flex: 1; min-width: 120px; }
+
+@media (max-width: 600px) {
+  .equip-form-row { flex-direction: column; }
+}
