@@ -45,9 +45,19 @@ function writeLast(exerciseId: number | null | undefined, value: LastValue) {
  * or the last time you did it (persisted) — so you rarely re-type the weight.
  * Writes straight into the session's set-log map and persists the last value.
  */
+/**
+ * Dumbbell movements are logged as the weight of ONE dumbbell (per hand); barbell
+ * and bodyweight movements are a single total. Inferred from the exercise name.
+ */
+function isPerHand(name: string | undefined): boolean {
+  if (!name) return false
+  return /\b(dumbbell|hammer curl|lateral raise|rear[- ]?delt|renegade|flye|flyes|one[- ]?arm)\b/i.test(name)
+}
+
 export function SetLogForm({ workStep, setLogsRef }: SetLogFormProps) {
   const existing = setLogsRef.current.get(workStep.id)
   const alreadySaved = existing?.weightKg != null
+  const perHand = isPerHand(workStep.exerciseName)
 
   // The most recent set of this exercise with a logged weight (earlier this session).
   const priorThisSession = [...setLogsRef.current.entries()]
@@ -95,7 +105,9 @@ export function SetLogForm({ workStep, setLogsRef }: SetLogFormProps) {
       </div>
       <div className="setlog-fields">
         <label className="setlog-field">
-          <span>Weight (kg)</span>
+          <span title={perHand ? 'Enter the weight of ONE dumbbell (per hand).' : 'Total weight on the bar / plate.'}>
+            {perHand ? 'Weight / hand (kg)' : 'Weight (kg)'}
+          </span>
           <input
             type="number"
             inputMode="decimal"
