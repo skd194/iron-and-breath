@@ -8,6 +8,19 @@ export interface VideoDto {
   attribution: string | null
 }
 
+export interface BreathingDto {
+  concentric: string | null
+  eccentric: string | null
+  notes: string | null
+}
+
+/** Structured per-rep tempo (seconds) that drives the work-screen metronome. */
+export interface TempoDto {
+  concentricSeconds: number | null
+  eccentricSeconds: number | null
+  pauseSeconds: number | null
+}
+
 export interface ExerciseDto {
   id: number
   name: string
@@ -18,6 +31,15 @@ export interface ExerciseDto {
   baseSets: number
   sortOrder: number
   video: VideoDto | null
+  primaryMuscles: string[]
+  secondaryMuscles: string[]
+  breathing: BreathingDto | null
+  tempo: string | null
+  tempoSpec: TempoDto | null
+  benefits: string | null
+  commonMistakes: string | null
+  safetyTips: string | null
+  animationRef: string | null
 }
 
 export interface WorkoutDayDto {
@@ -25,6 +47,10 @@ export interface WorkoutDayDto {
   name: string
   focus: string
   sortOrder: number
+  /** Weekday this day is scheduled on: 0=Sun..6=Sat, or null = unscheduled. */
+  scheduledDayOfWeek: number | null
+  /** Archived days are hidden from the dashboard but kept for history. */
+  isArchived: boolean
   exercises: ExerciseDto[]
 }
 
@@ -40,11 +66,18 @@ export interface PhaseTodayDto {
   programStartDate: string // ISO date (yyyy-MM-dd)
 }
 
+export interface WarmUpMovementDto {
+  name: string
+  seconds: number
+  cue: string | null
+}
+
 export interface WarmUpDto {
   name: string
   rounds: number
   secondsPerRound: number
   transitionSeconds: number
+  movements: WarmUpMovementDto[]
 }
 
 export interface SettingsDto {
@@ -62,25 +95,259 @@ export interface StatsSummaryDto {
   perDayCompletedCounts: Record<number, number>
 }
 
+export type WorkoutSource = 'Guided' | 'Manual' | 'Imported'
+
+export interface SetLogDto {
+  id: number
+  exerciseId: number | null
+  exerciseName: string | null
+  setNumber: number
+  repsCompleted: number | null
+  weightKg: number | null
+  rpe: number | null
+  notes: string | null
+}
+
 export interface SessionDto {
   id: number
-  workoutDayId: number
-  workoutDayName: string
+  workoutDayId: number | null
+  workoutDayName: string | null
   date: string // yyyy-MM-dd
   phaseNumberAtCompletion: number
   startedAt: string
   completedAt: string | null
+  source: WorkoutSource
+  notes: string | null
+  perceivedDifficulty: number | null
+  setLogs: SetLogDto[]
+}
+
+export interface CreateSetLogRequest {
+  exerciseId?: number | null
+  exerciseName?: string | null
+  setNumber: number
+  repsCompleted?: number | null
+  weightKg?: number | null
+  rpe?: number | null
+  notes?: string | null
 }
 
 export interface CreateSessionRequest {
-  workoutDayId: number
+  workoutDayId: number | null
   date: string
   startedAt: string
   completedAt: string | null
+  source?: WorkoutSource
+  notes?: string | null
+  perceivedDifficulty?: number | null
+  setLogs?: CreateSetLogRequest[]
 }
 
 export interface UpdateSessionRequest {
-  workoutDayId: number
+  workoutDayId: number | null
   date: string
   completedAt: string | null
+  notes?: string | null
+  perceivedDifficulty?: number | null
+}
+
+// ---- Auth ----
+
+export interface UserDto {
+  id: number
+  email: string
+  displayName: string
+  hasPassword: boolean
+  googleLinked: boolean
+}
+
+export interface AuthResponse {
+  token: string
+  expiresAt: string
+  user: UserDto
+}
+
+export interface AuthConfigDto {
+  googleEnabled: boolean
+  googleClientId: string | null
+}
+
+export interface RegisterRequest {
+  email: string
+  password: string
+  displayName?: string
+}
+
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+// ---- Workout configuration (full CRUD) ----
+
+export interface CreateWorkoutDayRequest {
+  name: string
+  focus?: string
+  scheduledDayOfWeek?: number | null
+}
+
+export interface UpdateWorkoutDayRequest {
+  name: string
+  focus?: string
+  scheduledDayOfWeek?: number | null
+}
+
+export interface UpsertExerciseRequest {
+  name: string
+  repsDisplay?: string
+  targetRepsLow: number | null
+  targetRepsHigh: number | null
+  baseSets: number
+  cue?: string | null
+  videoId: number | null
+  tempoConcentricSeconds?: number | null
+  tempoEccentricSeconds?: number | null
+  tempoPauseSeconds?: number | null
+  breathingConcentric?: string | null
+  breathingEccentric?: string | null
+  breathingNotes?: string | null
+  primaryMuscles?: string[]
+  secondaryMuscles?: string[]
+  tempo?: string | null
+  benefits?: string | null
+  commonMistakes?: string | null
+  safetyTips?: string | null
+  animationRef?: string | null
+}
+
+export interface VideoLibraryItemDto {
+  id: number
+  title: string
+  video: VideoDto
+}
+
+// ---- AI coach ----
+
+export interface CoachMessageDto {
+  id: number
+  role: 'user' | 'assistant'
+  content: string
+  createdAt: string
+}
+
+export interface CoachStateDto {
+  aiEnabled: boolean
+  provider: string
+  messages: CoachMessageDto[]
+}
+
+// ---- Equipment inventory ----
+
+export type EquipmentCategory =
+  | 'Bench'
+  | 'Barbell'
+  | 'Dumbbell'
+  | 'Plates'
+  | 'Rack'
+  | 'Resistance'
+  | 'Cardio'
+  | 'Bodyweight'
+  | 'Accessory'
+  | 'Other'
+
+export type EquipmentStatus = 'Owned' | 'Planned'
+
+export interface EquipmentItemDto {
+  id: number
+  name: string
+  category: EquipmentCategory
+  specs: string | null
+  status: EquipmentStatus
+  sortOrder: number
+}
+
+export interface UpsertEquipmentRequest {
+  name: string
+  category: EquipmentCategory
+  specs?: string | null
+  status: EquipmentStatus
+}
+
+// ---- Muscle reference catalog ----
+
+export interface MuscleDto {
+  id: number
+  name: string
+  group: string
+  function: string
+  injuryNotes: string | null
+}
+
+// ---- Nutrition ----
+
+export type MealSlot = 'Breakfast' | 'Lunch' | 'Snack' | 'Dinner'
+
+export interface NutritionProfileDto {
+  weightKg: number
+  proteinTargetG: number
+  calorieTarget: number
+  dietStyle: string
+  notes: string | null
+}
+
+export interface UpdateNutritionProfileRequest {
+  weightKg: number
+  proteinTargetG: number
+  calorieTarget: number
+  dietStyle: string
+  notes?: string | null
+}
+
+export interface MealDto {
+  id: number
+  slot: MealSlot
+  timeHint: string | null
+  items: string
+  proteinG: number
+  sortOrder: number
+}
+
+export interface DietDayDto {
+  id: number
+  /** 0=Sun..6=Sat */
+  dayOfWeek: number
+  isFastingDay: boolean
+  notes: string | null
+  totalProteinG: number
+  meals: MealDto[]
+}
+
+export interface NutritionDto {
+  profile: NutritionProfileDto
+  days: DietDayDto[]
+}
+
+export interface UpdateDietDayRequest {
+  isFastingDay: boolean
+  notes?: string | null
+}
+
+export interface UpsertMealRequest {
+  slot: MealSlot
+  timeHint?: string | null
+  items: string
+  proteinG: number
+}
+
+// ---- Bodyweight tracking ----
+
+export interface BodyMetricDto {
+  id: number
+  date: string // yyyy-MM-dd
+  weightKg: number
+}
+
+export interface LogBodyMetricRequest {
+  date: string
+  weightKg: number
 }

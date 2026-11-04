@@ -1,20 +1,25 @@
+using IronAndBreath.Api.Auth;
 using IronAndBreath.Api.Dtos;
 using IronAndBreath.Domain.Entities;
 using IronAndBreath.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace IronAndBreath.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/settings")]
 public class SettingsController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly ICurrentUser _me;
 
-    public SettingsController(AppDbContext db)
+    public SettingsController(AppDbContext db, ICurrentUser me)
     {
         _db = db;
+        _me = me;
     }
 
     /// <summary>Program settings (start date, weekly target).</summary>
@@ -44,11 +49,12 @@ public class SettingsController : ControllerBase
 
     private async Task<UserProgramSettings> GetOrCreateAsync(CancellationToken ct)
     {
-        var settings = await _db.UserProgramSettings.FirstOrDefaultAsync(ct);
+        var settings = await _db.UserProgramSettings.FirstOrDefaultAsync(s => s.UserId == _me.Id, ct);
         if (settings is null)
         {
             settings = new UserProgramSettings
             {
+                UserId = _me.Id,
                 ProgramStartDate = DateOnly.FromDateTime(DateTime.Today),
                 DaysPerWeekTarget = 4
             };

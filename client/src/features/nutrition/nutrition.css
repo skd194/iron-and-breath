@@ -1,0 +1,116 @@
+.nutrition.grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+/* Targets */
+.nutrition-targets {
+  display: flex;
+  gap: var(--sp-5);
+  flex-wrap: wrap;
+  align-items: center;
+}
+.nutrition-target-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.nutrition-target-value.accent { color: var(--breath-400); }
+.nutrition-target-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.nutrition-notes { flex-basis: 100%; margin: 0; font-size: 13px; }
+.nutrition-profile-form {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-3);
+}
+.nutrition-profile-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
+
+/* Diet day */
+.diet-day { display: flex; flex-direction: column; gap: var(--sp-3); }
+.diet-day.fasting { border-color: color-mix(in srgb, var(--warn-500) 40%, var(--iron-800)); }
+.diet-day-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.diet-day-title {
+  font-size: 17px;
+  font-weight: 650;
+  color: var(--text-strong);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.diet-day-protein { font-size: 14px; }
+.diet-protein-bar {
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--iron-800);
+  overflow: hidden;
+}
+.diet-protein-fill {
+  display: block;
+  height: 100%;
+  background: var(--breath-500);
+  border-radius: var(--r-pill);
+  transition: width 0.3s ease;
+}
+.diet-day-notes { margin: 0; font-size: 13px; }
+
+.diet-meals { display: flex; flex-direction: column; gap: var(--sp-2); }
+.meal-row {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: flex-start;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  background: var(--iron-850);
+  border: 1px solid var(--iron-800);
+}
+.meal-slot {
+  flex: 0 0 84px;
+  font-size: 12px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--breath-400);
+  padding-top: 2px;
+}
+.meal-body { flex: 1; min-width: 0; }
+.meal-items { font-size: 14px; color: var(--text); }
+.meal-meta { display: flex; gap: var(--sp-3); font-size: 12px; margin-top: 2px; }
+.meal-actions { display: flex; gap: var(--sp-1); }
+
+.diet-day-actions {
+  display: flex;
+  gap: var(--sp-4);
+  align-items: center;
+}
+.diet-fasting-toggle { font-size: 13px; }
+
+.meal-form,
+.nutrition .meal-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border-radius: var(--r-sm);
+  background: var(--iron-850);
+  border: 1px solid var(--iron-700);
+}
+.meal-form-row { display: flex; gap: var(--sp-2); }
+.meal-form-row .input { flex: 1; }
+.meal-protein-input { flex: 0 0 70px !important; }
+.meal-form-actions { display: flex; justify-content: flex-end; gap: var(--sp-2); }
+
+.nutrition-disclaimer { font-size: 12px; max-width: 680px; }
+
+@media (max-width: 600px) {
+  .nutrition-profile-form { grid-template-columns: 1fr 1fr; }
+  .meal-slot { flex-basis: 70px; }
+}

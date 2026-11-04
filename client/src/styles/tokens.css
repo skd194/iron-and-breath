@@ -55,4 +55,94 @@
   --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.35);
 
   --ring-track: var(--iron-700);
+
+  /* Surface used by the sticky top bar (themeable). */
+  --topbar-bg: rgba(11, 15, 20, 0.72);
+  /* Optional decorative background layer (grid/scanlines); none by default. */
+  --bg-decoration: none;
+}
+
+/* ============================================================
+   THEME: HUD / Neon (flagship dark) — near-black, electric cyan,
+   mono readouts, grid lines, glassy cards.
+   ============================================================ */
+html[data-theme='neon'] {
+  color-scheme: dark;
+
+  --iron-950: #04070d;
+  --iron-900: #070b12;
+  --iron-850: #0a1019;
+  --iron-800: #0e1724;
+  --iron-700: #162233;
+  --iron-600: #24344a;
+  --iron-500: #3a506b;
+
+  --text-strong: #eaf7ff;
+  --text: #b8ccdd;
+  --text-muted: #6d8498;
+  --text-faint: #44586c;
+
+  --breath-500: #22d3ee; /* electric cyan */
+  --breath-400: #67e8f9;
+  --breath-600: #06b6d4;
+  --ember-500: #ff7a59;
+  --gold-500: #ffd24a;
+
+  --heat-0: #0c1521;
+  --heat-1: #0a3a44;
+  --heat-2: #0e6b78;
+  --heat-3: #15a3b8;
+  --heat-4: #22d3ee;
+
+  --ring-track: #16222f;
+  --shadow-2: 0 10px 34px rgba(0, 0, 0, 0.55);
+  --topbar-bg: rgba(4, 7, 13, 0.78);
+
+  /* Faint tech grid behind everything. */
+  --bg-decoration:
+    linear-gradient(transparent 95%, rgba(34, 211, 238, 0.05) 95%),
+    linear-gradient(90deg, transparent 95%, rgba(34, 211, 238, 0.05) 95%);
+}
+
+/* ============================================================
+   THEME: Classic Professional (light) — clean light surfaces,
+   deep teal/indigo accents, high legibility.
+   ============================================================ */
+html[data-theme='light'] {
+  color-scheme: light;
+
+  --iron-950: #eef2f7;
+  --iron-900: #f5f8fc;
+  --iron-850: #ffffff;
+  --iron-800: #eceff4;
+  --iron-700: #dde4ec;
+  --iron-600: #c5d0dc;
+  --iron-500: #93a2b4;
+
+  --text-strong: #101b2a;
+  --text: #2d3e50;
+  --text-muted: #5b6b7b;
+  --text-faint: #8597a8;
+
+  --breath-500: #0d9488; /* deep teal */
+  --breath-400: #0f766e;
+  --breath-600: #0b7a6f;
+  --ember-500: #e2593f;
+  --gold-500: #ca8a04;
+
+  --ok-500: #059669;
+  --warn-500: #b45309;
+  --danger-500: #dc2626;
+
+  --heat-0: #e6ebf1;
+  --heat-1: #bfe6e1;
+  --heat-2: #7fccc4;
+  --heat-3: #34a99c;
+  --heat-4: #0d9488;
+
+  --ring-track: #dde4ec;
+  --shadow-1: 0 1px 2px rgba(16, 27, 42, 0.08);
+  --shadow-2: 0 10px 28px rgba(16, 27, 42, 0.12);
+  --topbar-bg: rgba(255, 255, 255, 0.82);
+  --bg-decoration: none;
 }

@@ -56,7 +56,13 @@ public static class VideoSeeder
             return;
         }
 
-        var exercises = await db.Exercises.ToListAsync(ct);
+        // Only the seeded template exercises (UserId == null day) are managed by
+        // the seeder. Each user's cloned copy inherits the VideoId at provisioning
+        // time and is theirs to edit afterwards.
+        var exercises = await db.Exercises
+            .Include(e => e.WorkoutDay)
+            .Where(e => e.WorkoutDay!.UserId == null)
+            .ToListAsync(ct);
         var videos = await db.ExerciseVideos.ToListAsync(ct);
 
         var linked = 0;

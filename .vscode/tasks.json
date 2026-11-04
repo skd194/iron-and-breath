@@ -1,0 +1,57 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-api",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/server/IronAndBreath.Api/IronAndBreath.Api.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      // Runs the Vite dev server in the background. The problem matcher lets the
+      // debugger know when it's ready (Vite prints "Local:").
+      "label": "client-dev",
+      "type": "npm",
+      "script": "dev",
+      "path": "client",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*VITE.*",
+          "endsPattern": ".*(Local:|ready in).*"
+        }
+      },
+      "presentation": {
+        "group": "dev"
+      }
+    },
+    {
+      "label": "test",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["test", "${workspaceFolder}/server/IronAndBreath.slnx"],
+      "problemMatcher": "$msCompile",
+      "group": "test"
+    },
+    {
+      // Bring up the full container stack (Podman). Uses the launcher script.
+      "label": "podman-up",
+      "type": "shell",
+      "windows": { "command": "${workspaceFolder}/podman-up.cmd" },
+      "command": "${workspaceFolder}/podman-up.sh",
+      "problemMatcher": []
+    }
+  ]
+}

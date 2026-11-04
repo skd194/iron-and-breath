@@ -8,6 +8,12 @@ public record VideoDto(
     int? DurationSeconds,
     string? Attribution);
 
+/// <summary>Breathing cues for the concentric/eccentric phases (null when not configured).</summary>
+public record BreathingDto(string? Concentric, string? Eccentric, string? Notes);
+
+/// <summary>Structured per-rep tempo (seconds) that drives the work-screen metronome.</summary>
+public record TempoDto(int? ConcentricSeconds, int? EccentricSeconds, int? PauseSeconds);
+
 public record ExerciseDto(
     int Id,
     string Name,
@@ -17,13 +23,24 @@ public record ExerciseDto(
     string? Cue,
     int BaseSets,
     int SortOrder,
-    VideoDto? Video);
+    VideoDto? Video,
+    IReadOnlyList<string> PrimaryMuscles,
+    IReadOnlyList<string> SecondaryMuscles,
+    BreathingDto? Breathing,
+    string? Tempo,
+    TempoDto? TempoSpec,
+    string? Benefits,
+    string? CommonMistakes,
+    string? SafetyTips,
+    string? AnimationRef);
 
 public record WorkoutDayDto(
     int Id,
     string Name,
     string Focus,
     int SortOrder,
+    DayOfWeek? ScheduledDayOfWeek,
+    bool IsArchived,
     IReadOnlyList<ExerciseDto> Exercises);
 
 public record PhaseTodayDto(
@@ -37,11 +54,14 @@ public record PhaseTodayDto(
     string? Notes,
     DateOnly ProgramStartDate);
 
+public record WarmUpMovementDto(string Name, int Seconds, string? Cue);
+
 public record WarmUpDto(
     string Name,
     int Rounds,
     int SecondsPerRound,
-    int TransitionSeconds);
+    int TransitionSeconds,
+    IReadOnlyList<WarmUpMovementDto> Movements);
 
 public record SettingsDto(
     DateOnly ProgramStartDate,

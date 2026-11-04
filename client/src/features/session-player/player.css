@@ -6,13 +6,39 @@
 }
 
 .player {
-  max-width: 720px;
+  max-width: 1360px;
   margin: 0 auto;
   min-height: 100%;
   padding: var(--sp-5) var(--sp-5) var(--sp-7);
   display: flex;
   flex-direction: column;
   gap: var(--sp-4);
+}
+
+/* Timer/info column + workout-plan list side by side (stacks on mobile). */
+.player-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  gap: var(--sp-5);
+  align-items: start;
+}
+.player-col-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+.player-agenda {
+  position: sticky;
+  top: var(--sp-4);
+  max-height: calc(100vh - var(--sp-7));
+  display: flex;
+  min-height: 0;
+}
+/* Rest/work details span a wide two-column band instead of a thin centre strip. */
+.player-info.rest-panel {
+  max-width: 980px;
+  margin-inline: auto;
 }
 
 .player-top {
@@ -106,6 +132,154 @@
   max-width: 480px;
 }
 
+/* Target muscles */
+.muscles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+.muscle-chip {
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 2px 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid transparent;
+}
+.muscle-chip.primary {
+  background: color-mix(in srgb, var(--accent, var(--breath-500)) 20%, transparent);
+  color: var(--breath-300, var(--breath-400));
+  border-color: color-mix(in srgb, var(--accent, var(--breath-500)) 45%, transparent);
+}
+.muscle-chip.secondary {
+  background: var(--iron-800);
+  color: var(--text-muted);
+}
+.muscles.compact .muscle-chip {
+  font-size: 11px;
+  padding: 1px 8px;
+}
+
+/* Breathing indicator */
+.breathing {
+  display: flex;
+  align-items: stretch;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--iron-850);
+  border: 1px solid var(--iron-800);
+  animation: breathe-pulse 5s ease-in-out infinite;
+}
+.breathing-phase {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 84px;
+}
+.breathing-arrow {
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 700;
+}
+.breathing-arrow.up {
+  color: var(--breath-400);
+}
+.breathing-arrow.down {
+  color: var(--gold-500, var(--text-muted));
+}
+.breathing-word {
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--text-strong);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.breathing-cap {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-faint);
+}
+.breathing-divider {
+  width: 1px;
+  background: var(--iron-700);
+}
+.breathing.breathing-note {
+  display: block;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  animation: none;
+}
+@keyframes breathe-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent, var(--breath-500)) 12%, transparent); }
+}
+
+/* Exercise animation slot */
+.exercise-animation {
+  width: 100%;
+  max-width: 520px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--iron-850);
+  border: 1px solid var(--iron-800);
+}
+.exercise-animation img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.exercise-animation.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+}
+.exercise-animation .anim-emoji {
+  font-size: 40px;
+  opacity: 0.7;
+}
+
+/* Rest panel extras */
+.rest-next-label {
+  margin: 0;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.rest-next-name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 650;
+  color: var(--text-strong);
+}
+.rest-tip {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 480px;
+}
+.rest-tip-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-faint);
+  margin-right: 6px;
+}
+
+/* Voice mic button */
+.mic-btn.listening {
+  color: var(--breath-400);
+  border-color: color-mix(in srgb, var(--breath-500) 55%, transparent);
+  animation: breathe-pulse 2s ease-in-out infinite;
+}
+
 /* Video */
 .video-embed {
   width: 100%;
@@ -184,6 +358,155 @@
   margin-top: auto;
 }
 
+/* Workout plan list */
+.agenda {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--iron-900);
+  border: 1px solid var(--iron-800);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.agenda-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--iron-800);
+}
+.agenda-title {
+  font-weight: 650;
+  color: var(--text-strong);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.agenda-sub {
+  font-size: 12px;
+  white-space: nowrap;
+}
+.agenda-list {
+  list-style: none;
+  margin: 0;
+  padding: var(--sp-2);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+/* One card per exercise (and the warm-up). Read-only: the session is worked
+   through in order, so cards are not interactive. */
+.agenda-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px solid var(--iron-800);
+  border-radius: var(--r-sm);
+  background: var(--iron-850);
+  color: var(--text);
+  text-align: left;
+  transition: background 0.12s ease, border-color 0.12s ease, opacity 0.12s ease;
+}
+
+.agenda-card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.agenda-marker {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1.5px solid var(--iron-700);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1;
+  color: var(--text-faint);
+}
+.agenda-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agenda-total {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+/* Detail chips: sets / reps / work / rest. */
+.agenda-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-left: calc(20px + var(--sp-2));
+}
+.agenda-chip {
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 1px 7px;
+  border-radius: var(--r-pill);
+  background: var(--iron-800);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.agenda-chip.reps {
+  background: rgba(45, 212, 191, 0.14);
+  color: var(--breath-400);
+}
+
+.agenda-live,
+.agenda-cue {
+  padding-left: calc(20px + var(--sp-2));
+  font-size: 12px;
+}
+.agenda-live {
+  color: var(--accent, var(--breath-400));
+  font-weight: 600;
+}
+.agenda-cue {
+  color: var(--text-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Done: checked off and dimmed. */
+.agenda-card.done {
+  opacity: 0.5;
+}
+.agenda-card.done .agenda-marker {
+  border-color: var(--accent, var(--breath-500));
+  color: var(--accent, var(--breath-500));
+}
+
+/* Current: highlighted with the step's accent. */
+.agenda-card.current {
+  background: color-mix(in srgb, var(--accent, var(--breath-500)) 15%, var(--iron-850));
+  border-color: color-mix(in srgb, var(--accent, var(--breath-500)) 55%, transparent);
+}
+.agenda-card.current .agenda-marker {
+  border-color: var(--accent, var(--breath-500));
+  color: var(--accent, var(--breath-500));
+}
+.agenda-card.current .agenda-name {
+  color: var(--text-strong);
+}
+
 .paused-veil {
   position: fixed;
   top: var(--sp-6);
@@ -249,6 +572,20 @@
   padding: 0;
 }
 
+/* Below this width the plan drops beneath the timer so you scroll down to it. */
+@media (max-width: 920px) {
+  .player-body {
+    grid-template-columns: 1fr;
+  }
+  .player-agenda {
+    position: static;
+    max-height: none;
+  }
+  .agenda-list {
+    max-height: 60vh;
+  }
+}
+
 @media (max-width: 520px) {
   .timer-value {
     font-size: 44px;
@@ -257,3 +594,353 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ---- Rep-tempo metronome (work screen) ---- */
+.rep-tempo {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--accent, var(--breath-500)) 8%, var(--iron-850));
+  border: 1px solid color-mix(in srgb, var(--accent, var(--breath-500)) 35%, transparent);
+  box-shadow: 0 0 20px -6px color-mix(in srgb, var(--accent, var(--breath-500)) 45%, transparent);
+}
+.rep-tempo-count {
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+.rep-tempo-total { margin-left: 4px; opacity: 0.7; }
+.rep-tempo-phase {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+.rep-tempo-arrow {
+  font-size: 30px;
+  line-height: 1;
+  color: var(--accent, var(--breath-500));
+  transition: transform 0.2s ease;
+}
+.rep-tempo-concentric .rep-tempo-arrow { transform: translateY(-2px); }
+.rep-tempo-eccentric .rep-tempo-arrow { transform: translateY(2px); }
+.rep-tempo-word {
+  font-size: 30px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--text-strong);
+  text-transform: uppercase;
+}
+.rep-tempo-secs {
+  font-size: 22px;
+  color: var(--accent, var(--breath-500));
+}
+.rep-tempo-bar {
+  width: 100%;
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--iron-800);
+  overflow: hidden;
+}
+.rep-tempo-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent, var(--breath-500));
+  border-radius: var(--r-pill);
+  transition: width 0.1s linear;
+}
+.rep-tempo-breath {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ---- Rest-screen muscle education ---- */
+.rest-muscles {
+  width: 100%;
+  max-width: 980px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+  text-align: left;
+}
+.rest-muscles-head {
+  grid-column: 1 / -1;
+}
+.rest-muscles-head {
+  margin: 0;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.rest-muscle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  background: var(--iron-850);
+  border: 1px solid var(--iron-800);
+}
+.rest-muscle-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.rest-muscle-fn { font-size: 13px; color: var(--text-muted); }
+.rest-muscle-injury { font-size: 12px; color: var(--warn-500); }
+
+/* Compact form clip on the work screen so it never buries the coaching. */
+.exercise-animation.compact {
+  max-width: 320px;
+}
+.exercise-animation-wrap { width: 100%; display: flex; justify-content: center; }
+.exercise-animation-wrap.compact .video-embed {
+  max-width: 300px;
+}
+
+/* "Watch form on YouTube" fallback card (shown when no curated clip exists). */
+a.exercise-animation.video-search {
+  text-decoration: none;
+  cursor: pointer;
+  gap: var(--sp-1);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+a.exercise-animation.video-search:hover {
+  border-color: var(--accent, var(--breath-500));
+  background: color-mix(in srgb, var(--accent, var(--breath-500)) 8%, var(--iron-850));
+}
+.video-search .anim-emoji {
+  color: #ff0033;
+  opacity: 1;
+}
+.video-search-label {
+  font-weight: 650;
+  color: var(--text-strong);
+  font-size: 15px;
+}
+.video-search-sub {
+  font-size: 12px;
+}
+
+/* ===== Two-column no-scroll stage (work + rest) ===== */
+.player-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  text-align: center;
+}
+.player-stage {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-6);
+  align-items: start;
+}
+.stage-focus,
+.stage-detail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+.player-detail {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+}
+@media (max-width: 900px) {
+  .player-stage {
+    grid-template-columns: 1fr;
+    gap: var(--sp-4);
+  }
+}
+
+/* ===== Big animated breathing orb ===== */
+.rep-breath {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: var(--sp-2) 0;
+}
+.rep-breath-orb {
+  width: 116px;
+  height: 116px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 42%,
+    color-mix(in srgb, var(--accent, var(--breath-500)) 55%, transparent),
+    color-mix(in srgb, var(--accent, var(--breath-500)) 10%, transparent));
+  border: 2px solid var(--accent, var(--breath-500));
+  box-shadow: 0 0 34px -4px color-mix(in srgb, var(--accent, var(--breath-500)) 65%, transparent);
+  transition: transform 0.12s linear;
+}
+.rep-breath-ring {
+  width: 58%;
+  height: 58%;
+  border-radius: 50%;
+  border: 2px dashed color-mix(in srgb, var(--accent, var(--breath-500)) 55%, transparent);
+}
+.rep-breath-word {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-strong);
+}
+.rep-tempo-eccentric .rep-breath-word { color: var(--breath-400); }
+
+/* ===== Per-set weight/reps logging ===== */
+.setlog {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--iron-850);
+  border: 1px solid var(--iron-800);
+}
+.setlog-head {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--text-strong);
+  text-align: center;
+}
+.setlog-fields {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-2);
+}
+.setlog-field {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+}
+/* Reserve two lines for every label so single- and two-line labels line up. */
+.setlog-field > span {
+  min-height: 2.4em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
+}
+.setlog-field input {
+  background: var(--iron-800);
+  border: 1px solid var(--iron-700);
+  border-radius: var(--r-sm);
+  color: var(--text-strong);
+  padding: var(--sp-2);
+  font-family: inherit;
+  font-size: 16px;
+  text-align: center;
+  width: 100%;
+}
+.setlog-field input:focus { outline: none; border-color: var(--breath-600); }
+.setlog-save { align-self: center; }
+
+/* Animated two-frame movement demo (free-exercise-db) */
+.exercise-animation.frames {
+  position: relative;
+  background: #f4f5f7;
+}
+.exercise-animation.frames img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.exercise-animation.frames img.on {
+  opacity: 1;
+}
+
+/* ===== Warm-up / transition view ===== */
+.player-main.warmup .warmup-view {
+  min-height: 38vh;
+  display: grid;
+  place-items: center;
+}
+.warmup-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-faint);
+  padding: 2px 10px;
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--gold-500) 16%, transparent);
+  color: var(--gold-500);
+}
+
+/* ===== Full-width "muscles worked" grid below the rest stage ===== */
+.rest-muscles-section {
+  width: 100%;
+  margin-top: var(--sp-5);
+}
+.rest-muscles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+}
+
+/* ===== Exercise demo (animation + YouTube link) ===== */
+.exercise-demo {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.watch-yt {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--iron-700);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.watch-yt:hover {
+  color: #ff0033;
+  border-color: color-mix(in srgb, #ff0033 50%, transparent);
+}
+
+/* Muscle chip legend */
+.muscles-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-left: var(--sp-2);
+}
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.legend-dot.primary { background: var(--accent, var(--breath-500)); margin-right: 1px; }
+.legend-dot.secondary { background: var(--iron-600); margin: 0 1px 0 6px; }

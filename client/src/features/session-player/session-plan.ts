@@ -1,4 +1,13 @@
-import type { PhaseTodayDto, VideoDto, WarmUpDto, WorkoutDayDto } from '../../shared/api/types'
+import type {
+  BreathingDto,
+  PhaseTodayDto,
+  TempoDto,
+  VideoDto,
+  WarmUpDto,
+  WorkoutDayDto,
+} from '../../shared/api/types'
+import type { ExerciseDto } from '../../shared/api/types'
+import { toRepTempo, tempoSetSeconds } from './rep-tempo'
 
 export type StepKind =
   | 'warmup-round'
@@ -15,20 +24,166 @@ export interface SessionStep {
   durationSeconds: number
   isRest: boolean
   // Work-step context
+  exerciseId?: number
+  plannedReps?: number | null
   exerciseName?: string
   repsDisplay?: string
   cue?: string | null
   video?: VideoDto | null
   setNumber?: number
   totalSets?: number
+  // Exercise coaching metadata (also carried onto the related rest steps so the
+  // rest screen can show muscles/technique/breathing for the relevant exercise).
+  primaryMuscles?: string[]
+  secondaryMuscles?: string[]
+  breathing?: BreathingDto | null
+  tempoSpec?: TempoDto | null
+  animationRef?: string | null
+  benefits?: string | null
+  commonMistakes?: string | null
+  safetyTips?: string | null
   // Warm-up context
   roundNumber?: number
   totalRounds?: number
 }
 
+/**
+ * Strips a leading "N sets x " (or "N sets ") from a rep display so the text shows
+ * only the per-set target (e.g. "8-12 reps", "to near-failure"). The actual set
+ * count is shown live as "Set X of Y" and in the agenda, computed from the phase,
+ * so keeping it in the text too would contradict it once a phase adds a set.
+ */
+function repTargetText(display: string): string {
+  return display.replace(/^\s*\d+\s*sets?\s*(?:x|×)?\s*/i, '').trim() || display
+}
+
+/** Extracts the coaching metadata carried on each step from an exercise. */
+function metaOf(ex: ExerciseDto) {
+  return {
+    exerciseId: ex.id,
+    plannedReps: ex.targetRepsHigh ?? ex.targetRepsLow ?? null,
+    exerciseName: ex.name,
+    repsDisplay: repTargetText(ex.repsDisplay),
+    cue: ex.cue,
+    video: ex.video,
+    primaryMuscles: ex.primaryMuscles,
+    secondaryMuscles: ex.secondaryMuscles,
+    breathing: ex.breathing,
+    tempoSpec: ex.tempoSpec,
+    animationRef: ex.animationRef,
+    benefits: ex.benefits,
+    commonMistakes: ex.commonMistakes,
+    safetyTips: ex.safetyTips,
+  }
+}
+
+/**
+ * How long a work set should run. Tempo-synced when the exercise has a structured
+ * tempo and a concrete rep target (reps × cycle); otherwise the phase's fixed work
+ * timer (holds, to-failure sets, and legacy exercises without tempo).
+ */
+function workStepSeconds(ex: ExerciseDto, phase: PhaseTodayDto): number {
+  const tempo = toRepTempo(ex.tempoSpec)
+  const reps = ex.targetRepsHigh ?? ex.targetRepsLow ?? null
+  if (tempo && reps && reps > 0) {
+    return tempoSetSeconds(tempo, reps)
+  }
+  return phase.restWorkSeconds
+}
+
 /** Sets performed for an exercise under a given phase (baseSets + phase delta). */
 export function setsForExercise(baseSets: number, phase: PhaseTodayDto): number {
   return Math.max(1, baseSets + phase.setDelta)
+}
+
+export type AgendaGroupKind = 'warmup' | 'exercise'
+
+/** One collapsible block in the plan list: the warm-up, or a single exercise. */
+export interface AgendaGroup {
+  key: string
+  kind: AgendaGroupKind
+  title: string
+  /** Step index range this group spans (inclusive), for progress + jumping. */
+  startIndex: number
+  endIndex: number
+  totalSeconds: number
+  // Exercise context
+  reps?: string
+  cue?: string | null
+  sets?: number
+  workSeconds?: number
+  restSeconds?: number
+  // Warm-up context
+  rounds?: number
+  roundSeconds?: number
+  transitionSeconds?: number
+}
+
+/**
+ * Folds the flat step list into exercise-level groups (plus one warm-up group)
+ * so the plan can be shown as cards with reps/rest details instead of every
+ * individual timer step. Pure; derives all timing from the steps themselves.
+ */
+export function groupStepsForAgenda(steps: SessionStep[]): AgendaGroup[] {
+  const groups: AgendaGroup[] = []
+  let cur: AgendaGroup | null = null
+  let closed = false
+
+  for (let i = 0; i < steps.length; i++) {
+    const s = steps[i]
+    if (s.kind === 'warmup-round' || s.kind === 'warmup-transition') {
+      if (!cur || cur.kind !== 'warmup') {
+        cur = { key: `warmup-${i}`, kind: 'warmup', title: 'Warm-up', startIndex: i, endIndex: i, totalSeconds: 0 }
+        groups.push(cur)
+      }
+      cur.endIndex = i
+      cur.totalSeconds += s.durationSeconds
+      cur.title = 'Warm-up'
+      if (s.kind === 'warmup-round') {
+        // Only the Surya Namaskar rounds carry a roundNumber; the dynamic
+        // movements don't, so they aren't counted as "rounds".
+        if (s.roundNumber != null) {
+          cur.rounds = (cur.rounds ?? 0) + 1
+          cur.roundSeconds = s.durationSeconds
+        }
+      } else {
+        cur.transitionSeconds = s.durationSeconds
+      }
+    } else if (s.kind === 'work') {
+      if (!cur || cur.kind !== 'exercise' || closed) {
+        cur = {
+          key: `ex-${i}`,
+          kind: 'exercise',
+          title: s.exerciseName ?? s.title,
+          startIndex: i,
+          endIndex: i,
+          totalSeconds: 0,
+          reps: s.repsDisplay,
+          cue: s.cue,
+          sets: s.totalSets,
+          workSeconds: s.durationSeconds,
+        }
+        groups.push(cur)
+        closed = false
+      }
+      cur.endIndex = i
+      cur.totalSeconds += s.durationSeconds
+    } else if (s.kind === 'rest-set') {
+      if (cur) {
+        cur.endIndex = i
+        cur.restSeconds = s.durationSeconds
+        cur.totalSeconds += s.durationSeconds
+      }
+    } else if (s.kind === 'rest-exercise') {
+      if (cur) {
+        cur.endIndex = i
+        cur.totalSeconds += s.durationSeconds
+        closed = true // trailing rest ends this exercise; next work starts a new group
+      }
+    }
+  }
+
+  return groups
 }
 
 /**
@@ -45,7 +200,17 @@ export function buildSessionPlan(
   let n = 0
   const push = (s: Omit<SessionStep, 'id'>) => steps.push({ ...s, id: `${s.kind}-${n++}` })
 
-  // --- Warm-up: N rounds of Surya Namaskar with transition breaks between ---
+  // --- Warm-up: dynamic movements first (to get started), then Surya Namaskar ---
+  for (const m of warmup.movements ?? []) {
+    push({
+      kind: 'warmup-round',
+      title: m.name,
+      subtitle: m.cue ?? 'Warm-up',
+      durationSeconds: m.seconds,
+      isRest: false,
+    })
+  }
+
   for (let r = 1; r <= warmup.rounds; r++) {
     push({
       kind: 'warmup-round',
@@ -71,31 +236,35 @@ export function buildSessionPlan(
   const exercises = [...day.exercises].sort((a, b) => a.sortOrder - b.sortOrder)
   exercises.forEach((ex, ei) => {
     const sets = setsForExercise(ex.baseSets, phase)
+    const meta = metaOf(ex)
+    const workSeconds = workStepSeconds(ex, phase)
     for (let s = 1; s <= sets; s++) {
       push({
         kind: 'work',
         title: ex.name,
         subtitle: `Set ${s} of ${sets}`,
-        durationSeconds: phase.restWorkSeconds,
+        durationSeconds: workSeconds,
         isRest: false,
-        exerciseName: ex.name,
-        repsDisplay: ex.repsDisplay,
-        cue: ex.cue,
-        video: ex.video,
         setNumber: s,
         totalSets: sets,
+        ...meta,
       })
       if (s < sets) {
+        // Within-exercise rest: carry the current exercise's context.
         push({
           kind: 'rest-set',
           title: 'Rest',
           subtitle: `Next: ${ex.name} · set ${s + 1}`,
           durationSeconds: phase.restBetweenSetsSeconds,
           isRest: true,
+          setNumber: s + 1,
+          totalSets: sets,
+          ...meta,
         })
       }
     }
     if (ei < exercises.length - 1) {
+      // Between-exercise rest: preview the NEXT exercise's context.
       const next = exercises[ei + 1]
       push({
         kind: 'rest-exercise',
@@ -103,6 +272,7 @@ export function buildSessionPlan(
         subtitle: `Next up: ${next.name}`,
         durationSeconds: phase.restBetweenExercisesSeconds,
         isRest: true,
+        ...metaOf(next),
       })
     }
   })

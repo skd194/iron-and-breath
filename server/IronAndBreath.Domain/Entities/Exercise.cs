@@ -31,4 +31,55 @@ public class Exercise
 
     public int? VideoId { get; set; }
     public ExerciseVideo? Video { get; set; }
+
+    // ---- Coaching metadata (drives the interactive workout + rest screens) ----
+    // Kept on the exercise for now; promoted to a shared exercise catalog in a
+    // later phase. All nullable/additive so existing rows remain valid.
+
+    /// <summary>Breathing cue for the concentric (exertion) phase, e.g. "Exhale".</summary>
+    public string? BreathingConcentric { get; set; }
+
+    /// <summary>Breathing cue for the eccentric (return) phase, e.g. "Inhale".</summary>
+    public string? BreathingEccentric { get; set; }
+
+    /// <summary>Free-text breathing guidance for holds/edge cases, e.g. "Breathe steadily".</summary>
+    public string? BreathingNotes { get; set; }
+
+    /// <summary>Primary muscles worked, stored comma-separated (e.g. "Chest,Triceps").</summary>
+    public string? PrimaryMuscles { get; set; }
+
+    /// <summary>Secondary muscles worked, stored comma-separated.</summary>
+    public string? SecondaryMuscles { get; set; }
+
+    /// <summary>Movement tempo, e.g. "2-0-2" or "slow eccentric". Free-text, for display.</summary>
+    public string? Tempo { get; set; }
+
+    // ---- Structured tempo (drives the per-rep metronome on the work screen) ----
+    // All nullable: when the three are present (with a target rep count) the work
+    // step becomes rep-synced and the RepTempoGuide calls each phase; otherwise the
+    // player falls back to a fixed work timer + static breathing cue.
+
+    /// <summary>Seconds for the concentric ("up"/exertion) phase of one rep.</summary>
+    public int? TempoConcentricSeconds { get; set; }
+
+    /// <summary>Seconds for the eccentric ("down"/return) phase of one rep.</summary>
+    public int? TempoEccentricSeconds { get; set; }
+
+    /// <summary>Seconds paused between phases (e.g. at the stretched or contracted position).</summary>
+    public int? TempoPauseSeconds { get; set; }
+
+    /// <summary>Key benefits, shown on the rest/detail screens.</summary>
+    public string? Benefits { get; set; }
+
+    /// <summary>Common mistakes to avoid.</summary>
+    public string? CommonMistakes { get; set; }
+
+    /// <summary>Safety/technique guidance.</summary>
+    public string? SafetyTips { get; set; }
+
+    /// <summary>
+    /// Asset key for the movement animation slot (resolved on the client).
+    /// Null falls back to the instructional video/placeholder.
+    /// </summary>
+    public string? AnimationRef { get; set; }
 }

@@ -10,6 +10,27 @@ public class WorkoutDay
     public string Focus { get; set; } = string.Empty;
     public int SortOrder { get; set; }
 
+    /// <summary>
+    /// The weekday this day is scheduled to be trained on. Null = unscheduled
+    /// (the user can run it any time, and it never counts as "missed"). Drives the
+    /// schedule-aware dashboard and missed-session detection.
+    /// </summary>
+    public DayOfWeek? ScheduledDayOfWeek { get; set; }
+
+    /// <summary>
+    /// Archived days are hidden from the dashboard, schedule and day picker but
+    /// kept so their logged sessions remain in history. Used when switching to a
+    /// new program without destroying the old days' history.
+    /// </summary>
+    public bool IsArchived { get; set; }
+
+    /// <summary>
+    /// Owning user. Null marks a seeded <em>template</em> day that is cloned into
+    /// each new user's own editable program; it is never shown to users directly.
+    /// </summary>
+    public int? UserId { get; set; }
+    public User? User { get; set; }
+
     public ICollection<Exercise> Exercises { get; set; } = new List<Exercise>();
     public ICollection<WorkoutSession> Sessions { get; set; } = new List<WorkoutSession>();
 }

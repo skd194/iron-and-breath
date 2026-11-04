@@ -43,16 +43,22 @@ button {
 
 .container {
   width: 100%;
-  max-width: 1040px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 0 var(--sp-5);
+}
+/* Use the extra room on large monitors instead of a narrow centred column. */
+@media (min-width: 1600px) {
+  .container {
+    max-width: 1500px;
+  }
 }
 
 .topbar {
   border-bottom: 1px solid var(--iron-800);
   position: sticky;
   top: 0;
-  background: rgba(11, 15, 20, 0.72);
+  background: var(--topbar-bg);
   backdrop-filter: blur(10px);
   z-index: 10;
 }
@@ -76,18 +82,68 @@ button {
 
 .nav {
   display: flex;
-  gap: var(--sp-2);
+  gap: 2px;
+  align-items: center;
+  flex-wrap: nowrap;
 }
 .nav a {
   padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--r-pill);
+  border-radius: var(--r-md);
   color: var(--text-muted);
   font-size: 14px;
   font-weight: 550;
+  white-space: nowrap;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.nav a:hover {
+  color: var(--text);
 }
 .nav a.active {
   background: var(--iron-800);
   color: var(--text-strong);
+}
+/* HUD active state: cyan underline + tint. */
+html[data-theme='neon'] .nav a.active {
+  background: color-mix(in srgb, var(--breath-500) 12%, transparent);
+  color: var(--breath-400);
+  box-shadow: inset 0 -2px 0 var(--breath-500);
+}
+
+/* ---- User menu (top-right) ---- */
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--text-muted);
+  font-size: 14px;
+  max-width: 180px;
+}
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, var(--breath-500), var(--breath-600));
+  color: #05201c;
+  font-weight: 700;
+  font-size: 13px;
+  flex: none;
+}
+.user-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.btn-sm {
+  padding: 6px 10px;
+  font-size: 13px;
 }
 
 main {
@@ -228,3 +284,127 @@ main {
   outline: none;
   border-color: var(--breath-600);
 }
+
+/* Standalone input/select (outside a .field) */
+.input,
+select.input {
+  background: var(--iron-800);
+  border: 1px solid var(--iron-700);
+  border-radius: var(--r-sm);
+  color: var(--text-strong);
+  padding: var(--sp-2) var(--sp-3);
+  font-family: inherit;
+  font-size: 14px;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--breath-600);
+}
+
+/* Section header with a trailing control */
+.section-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+/* Small toggle chips (range pickers, filters) */
+.chip {
+  background: var(--iron-800);
+  border: 1px solid var(--iron-700);
+  border-radius: var(--r-pill);
+  color: var(--text-muted);
+  padding: 4px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.chip:hover { color: var(--text); }
+.chip-active {
+  background: color-mix(in srgb, var(--breath-500) 18%, transparent);
+  border-color: var(--breath-600);
+  color: var(--breath-400);
+}
+.range-picker { display: flex; gap: var(--sp-2); }
+
+/* ---- Responsive / mobile ---- */
+@media (max-width: 720px) {
+  .container {
+    padding: 0 var(--sp-4);
+  }
+  .topbar-inner {
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    padding: var(--sp-3) 0;
+  }
+  .brand {
+    font-size: 16px;
+  }
+  .nav {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav a {
+    white-space: nowrap;
+  }
+  .user-menu {
+    margin-left: auto;
+  }
+  .user-name {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .btn-lg {
+    padding: var(--sp-3) var(--sp-4);
+    font-size: 15px;
+  }
+}
+
+/* ---- Theme decoration + neon accents ---- */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--bg-decoration);
+  background-size: 28px 28px;
+}
+
+/* Neon: glassy cards, cyan-tinted borders, subtle glow on accents + timers. */
+html[data-theme='neon'] .card {
+  border: 1px solid color-mix(in srgb, var(--breath-500) 14%, var(--iron-700));
+  box-shadow: var(--shadow-2), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(4px);
+}
+html[data-theme='neon'] .badge-accent {
+  box-shadow: 0 0 14px -5px var(--breath-500);
+}
+html[data-theme='neon'] .timer-value,
+html[data-theme='neon'] .rep-tempo-secs {
+  text-shadow: 0 0 16px color-mix(in srgb, var(--breath-500) 60%, transparent);
+}
+html[data-theme='neon'] .btn-primary {
+  box-shadow: 0 0 18px -6px var(--breath-500);
+}
+
+/* Theme switcher */
+.theme-select {
+  background: var(--iron-800);
+  border: 1px solid var(--iron-700);
+  border-radius: var(--r-pill);
+  color: var(--text);
+  padding: 4px 10px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.theme-select:focus { outline: none; border-color: var(--breath-600); }

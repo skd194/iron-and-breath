@@ -1,30 +1,48 @@
+using IronAndBreath.Api.Auth;
 using IronAndBreath.Api.Dtos;
 using IronAndBreath.Api.Services;
+using IronAndBreath.Domain.Entities;
 using IronAndBreath.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace IronAndBreath.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/workout-days")]
 public class WorkoutDaysController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly IVideoResolver _videos;
+    private readonly ICurrentUser _me;
 
-    public WorkoutDaysController(AppDbContext db, IVideoResolver videos)
+    public WorkoutDaysController(AppDbContext db, IVideoResolver videos, ICurrentUser me)
     {
         _db = db;
         _videos = videos;
+        _me = me;
     }
 
-    /// <summary>All workout days with their exercises and video references.</summary>
+    // ---- Reads ----
+
+    /// <summary>
+    /// The current user's workout days with their exercises and video references.
+    /// Archived days are excluded unless <paramref name="includeArchived"/> is set.
+    /// </summary>
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<WorkoutDayDto>>> GetAll(CancellationToken ct)
+    public async Task<ActionResult<IReadOnlyList<WorkoutDayDto>>> GetAll(
+        [FromQuery] bool includeArchived,
+        CancellationToken ct)
     {
-        var days = await _db.WorkoutDays
-            .AsNoTracking()
+        var query = OwnedDays().AsNoTracking();
+        if (!includeArchived)
+        {
+            query = query.Where(d => !d.IsArchived);
+        }
+
+        var days = await query
             .Include(d => d.Exercises)
                 .ThenInclude(e => e.Video)
             .OrderBy(d => d.SortOrder)
@@ -33,16 +51,301 @@ public class WorkoutDaysController : ControllerBase
         return Ok(days.Select(d => d.ToDto(_videos)).ToList());
     }
 
-    /// <summary>A single workout day by id.</summary>
     [HttpGet("{id:int}")]
     public async Task<ActionResult<WorkoutDayDto>> GetById(int id, CancellationToken ct)
     {
-        var day = await _db.WorkoutDays
+        var day = await OwnedDays()
             .AsNoTracking()
             .Include(d => d.Exercises)
                 .ThenInclude(e => e.Video)
             .FirstOrDefaultAsync(d => d.Id == id, ct);
 
         return day is null ? NotFound() : Ok(day.ToDto(_videos));
+    }
+
+    // ---- Day CRUD ----
+
+    [HttpPost]
+    public async Task<ActionResult<WorkoutDayDto>> CreateDay(CreateWorkoutDayRequest request, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            return ValidationProblem("Day name is required.");
+        }
+
+        var nextOrder = await OwnedDays().Select(d => (int?)d.SortOrder).MaxAsync(ct) ?? 0;
+        var day = new WorkoutDay
+        {
+            UserId = _me.Id,
+            Name = request.Name.Trim(),
+            Focus = request.Focus?.Trim() ?? string.Empty,
+            SortOrder = nextOrder + 1,
+            ScheduledDayOfWeek = request.ScheduledDayOfWeek,
+        };
+        _db.WorkoutDays.Add(day);
+        await _db.SaveChangesAsync(ct);
+
+        return CreatedAtAction(nameof(GetById), new { id = day.Id }, day.ToDto(_videos));
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<WorkoutDayDto>> UpdateDay(int id, UpdateWorkoutDayRequest request, CancellationToken ct)
+    {
+        var day = await OwnedDays().Include(d => d.Exercises).ThenInclude(e => e.Video)
+            .FirstOrDefaultAsync(d => d.Id == id, ct);
+        if (day is null)
+        {
+            return NotFound();
+        }
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            return ValidationProblem("Day name is required.");
+        }
+
+        day.Name = request.Name.Trim();
+        day.Focus = request.Focus?.Trim() ?? string.Empty;
+        day.ScheduledDayOfWeek = request.ScheduledDayOfWeek;
+        await _db.SaveChangesAsync(ct);
+
+        return Ok(day.ToDto(_videos));
+    }
+
+    /// <summary>
+    /// Appends the latest seeded program template (days + exercises) to the user's
+    /// own program, skipping any active day they already have by name. When
+    /// <paramref name="archiveExisting"/> is set, the user's current (non-template)
+    /// days are archived first — a clean "switch to the new plan" that keeps their
+    /// history intact. Non-destructive and idempotent.
+    /// </summary>
+    [HttpPost("import-template")]
+    public async Task<ActionResult<IReadOnlyList<WorkoutDayDto>>> ImportTemplate(
+        [FromQuery] bool archiveExisting,
+        CancellationToken ct)
+    {
+        if (archiveExisting)
+        {
+            var existing = await OwnedDays().Where(d => !d.IsArchived).ToListAsync(ct);
+            foreach (var d in existing)
+            {
+                d.IsArchived = true;
+            }
+            await _db.SaveChangesAsync(ct);
+        }
+
+        var templates = await _db.WorkoutDays
+            .AsNoTracking()
+            .Where(d => d.UserId == null)
+            .Include(d => d.Exercises)
+            .OrderBy(d => d.SortOrder)
+            .ToListAsync(ct);
+
+        // Skip templates the user already has as an ACTIVE day (so re-running is idempotent).
+        var activeNames = await OwnedDays().Where(d => !d.IsArchived).Select(d => d.Name).ToListAsync(ct);
+        var nextOrder = await OwnedDays().Select(d => (int?)d.SortOrder).MaxAsync(ct) ?? 0;
+
+        foreach (var template in templates.Where(t => !activeNames.Contains(t.Name)))
+        {
+            var day = UserProvisioningService.CloneDay(template, _me.Id);
+            day.SortOrder = ++nextOrder;
+            _db.WorkoutDays.Add(day);
+        }
+        await _db.SaveChangesAsync(ct);
+
+        return await GetAll(includeArchived: false, ct);
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteDay(int id, CancellationToken ct)
+    {
+        var day = await OwnedDays().FirstOrDefaultAsync(d => d.Id == id, ct);
+        if (day is null)
+        {
+            return NotFound();
+        }
+
+        // WorkoutSession -> WorkoutDay is Restrict; block deletion if history exists.
+        if (await _db.WorkoutSessions.AnyAsync(s => s.WorkoutDayId == id, ct))
+        {
+            return Conflict(new { message = "This day has logged sessions and can't be deleted. Delete those sessions first." });
+        }
+
+        _db.WorkoutDays.Remove(day);
+        await _db.SaveChangesAsync(ct);
+        return NoContent();
+    }
+
+    /// <summary>Reorder days by supplying their ids in the desired order.</summary>
+    [HttpPost("reorder")]
+    public async Task<IActionResult> ReorderDays(ReorderRequest request, CancellationToken ct)
+    {
+        var days = await OwnedDays().ToListAsync(ct);
+        ApplyOrder(days, d => d.Id, (d, order) => d.SortOrder = order, request.OrderedIds);
+        await _db.SaveChangesAsync(ct);
+        return NoContent();
+    }
+
+    // ---- Exercise CRUD (nested under a day) ----
+
+    [HttpPost("{dayId:int}/exercises")]
+    public async Task<ActionResult<WorkoutDayDto>> CreateExercise(int dayId, UpsertExerciseRequest request, CancellationToken ct)
+    {
+        var day = await OwnedDays().Include(d => d.Exercises).FirstOrDefaultAsync(d => d.Id == dayId, ct);
+        if (day is null)
+        {
+            return NotFound();
+        }
+
+        var validation = await ValidateExerciseAsync(request, ct);
+        if (validation is not null)
+        {
+            return validation;
+        }
+
+        var nextOrder = day.Exercises.Count == 0 ? 0 : day.Exercises.Max(e => e.SortOrder);
+        var exercise = new Exercise { SortOrder = nextOrder + 1 };
+        ApplyRequest(exercise, request);
+        day.Exercises.Add(exercise);
+
+        await _db.SaveChangesAsync(ct);
+        return await ReloadDay(dayId, ct);
+    }
+
+    [HttpPut("{dayId:int}/exercises/{exerciseId:int}")]
+    public async Task<ActionResult<WorkoutDayDto>> UpdateExercise(int dayId, int exerciseId, UpsertExerciseRequest request, CancellationToken ct)
+    {
+        var day = await OwnedDays().Include(d => d.Exercises).FirstOrDefaultAsync(d => d.Id == dayId, ct);
+        var exercise = day?.Exercises.FirstOrDefault(e => e.Id == exerciseId);
+        if (day is null || exercise is null)
+        {
+            return NotFound();
+        }
+
+        var validation = await ValidateExerciseAsync(request, ct);
+        if (validation is not null)
+        {
+            return validation;
+        }
+
+        ApplyRequest(exercise, request);
+
+        await _db.SaveChangesAsync(ct);
+        return await ReloadDay(dayId, ct);
+    }
+
+    [HttpDelete("{dayId:int}/exercises/{exerciseId:int}")]
+    public async Task<IActionResult> DeleteExercise(int dayId, int exerciseId, CancellationToken ct)
+    {
+        var day = await OwnedDays().Include(d => d.Exercises).FirstOrDefaultAsync(d => d.Id == dayId, ct);
+        var exercise = day?.Exercises.FirstOrDefault(e => e.Id == exerciseId);
+        if (day is null || exercise is null)
+        {
+            return NotFound();
+        }
+
+        _db.Exercises.Remove(exercise);
+        await _db.SaveChangesAsync(ct);
+        return NoContent();
+    }
+
+    [HttpPost("{dayId:int}/exercises/reorder")]
+    public async Task<IActionResult> ReorderExercises(int dayId, ReorderRequest request, CancellationToken ct)
+    {
+        var day = await OwnedDays().Include(d => d.Exercises).FirstOrDefaultAsync(d => d.Id == dayId, ct);
+        if (day is null)
+        {
+            return NotFound();
+        }
+
+        var list = day.Exercises.ToList();
+        ApplyOrder(list, e => e.Id, (e, order) => e.SortOrder = order, request.OrderedIds);
+        await _db.SaveChangesAsync(ct);
+        return NoContent();
+    }
+
+    // ---- Helpers ----
+
+    private IQueryable<WorkoutDay> OwnedDays() => _db.WorkoutDays.Where(d => d.UserId == _me.Id);
+
+    /// <summary>Copies a request onto an exercise (create + update share this).</summary>
+    private static void ApplyRequest(Exercise exercise, UpsertExerciseRequest request)
+    {
+        exercise.Name = request.Name.Trim();
+        exercise.RepsDisplay = request.RepsDisplay?.Trim() ?? string.Empty;
+        exercise.TargetRepsLow = request.TargetRepsLow;
+        exercise.TargetRepsHigh = request.TargetRepsHigh;
+        exercise.BaseSets = request.BaseSets;
+        exercise.Cue = Clean(request.Cue);
+        exercise.VideoId = request.VideoId;
+
+        exercise.BreathingConcentric = Clean(request.BreathingConcentric);
+        exercise.BreathingEccentric = Clean(request.BreathingEccentric);
+        exercise.BreathingNotes = Clean(request.BreathingNotes);
+        exercise.PrimaryMuscles = JoinMuscles(request.PrimaryMuscles);
+        exercise.SecondaryMuscles = JoinMuscles(request.SecondaryMuscles);
+        exercise.Tempo = Clean(request.Tempo);
+        exercise.TempoConcentricSeconds = request.TempoConcentricSeconds;
+        exercise.TempoEccentricSeconds = request.TempoEccentricSeconds;
+        exercise.TempoPauseSeconds = request.TempoPauseSeconds;
+        exercise.Benefits = Clean(request.Benefits);
+        exercise.CommonMistakes = Clean(request.CommonMistakes);
+        exercise.SafetyTips = Clean(request.SafetyTips);
+        exercise.AnimationRef = Clean(request.AnimationRef);
+    }
+
+    private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    /// <summary>Trims/de-blanks a muscle list into comma-separated storage (null when empty).</summary>
+    private static string? JoinMuscles(IReadOnlyList<string>? muscles)
+    {
+        if (muscles is null)
+        {
+            return null;
+        }
+        var cleaned = muscles.Select(m => m?.Trim()).Where(m => !string.IsNullOrEmpty(m)).ToList();
+        return cleaned.Count == 0 ? null : string.Join(",", cleaned);
+    }
+
+    private async Task<ActionResult<WorkoutDayDto>> ReloadDay(int dayId, CancellationToken ct)
+    {
+        var reloaded = await OwnedDays()
+            .AsNoTracking()
+            .Include(d => d.Exercises).ThenInclude(e => e.Video)
+            .FirstAsync(d => d.Id == dayId, ct);
+        return Ok(reloaded.ToDto(_videos));
+    }
+
+    private async Task<ActionResult?> ValidateExerciseAsync(UpsertExerciseRequest request, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            return ValidationProblem("Exercise name is required.");
+        }
+        if (request.BaseSets is < 1 or > 12)
+        {
+            return ValidationProblem("Base sets must be between 1 and 12.");
+        }
+        if (request.VideoId is int vid && !await _db.ExerciseVideos.AnyAsync(v => v.Id == vid, ct))
+        {
+            return ValidationProblem($"Video {vid} does not exist.");
+        }
+        return null;
+    }
+
+    private static void ApplyOrder<T>(List<T> items, Func<T, int> idOf, Action<T, int> setOrder, IReadOnlyList<int> orderedIds)
+    {
+        var order = 1;
+        foreach (var id in orderedIds)
+        {
+            var item = items.FirstOrDefault(i => idOf(i) == id);
+            if (item is not null)
+            {
+                setOrder(item, order++);
+            }
+        }
+        // Any ids not referenced keep a stable order after the explicit ones.
+        foreach (var item in items.Where(i => !orderedIds.Contains(idOf(i))))
+        {
+            setOrder(item, order++);
+        }
     }
 }

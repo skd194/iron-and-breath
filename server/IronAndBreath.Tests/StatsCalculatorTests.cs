@@ -34,6 +34,22 @@ public class StatsCalculatorTests
     }
 
     [Fact]
+    public void Ad_hoc_sessions_count_in_totals_but_are_excluded_from_per_day()
+    {
+        var records = new[]
+        {
+            new CompletedSessionRecord(Mon0101, 1),
+            new CompletedSessionRecord(Mon0101.AddDays(1), null), // ad-hoc manual
+        };
+
+        var result = StatsCalculator.Compute(records, Mon0101.AddDays(2), Mon0101, 4);
+
+        result.TotalSessions.Should().Be(2);
+        result.PerDayCompletedCounts.Should().ContainKey(1);
+        result.PerDayCompletedCounts.Values.Sum().Should().Be(1); // null day not tallied
+    }
+
+    [Fact]
     public void Streak_counts_consecutive_weeks_including_current()
     {
         var today = new DateOnly(2024, 1, 10); // week of Jan 8

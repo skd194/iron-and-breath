@@ -1,0 +1,86 @@
+/* Lightweight hand-rolled charts (line + bar). Theme-aware via CSS vars. */
+
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.chart-svg {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: block;
+}
+.chart-axis {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+}
+.chart-range {
+  color: var(--text);
+  font-size: 12px;
+}
+.chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-5);
+  font-size: 13px;
+}
+.chart-single {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-4);
+}
+.chart-single-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+/* Bar chart */
+.barchart {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-2);
+}
+.barchart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+  min-width: 0;
+  height: 100%;
+}
+.barchart-track {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.barchart-bar {
+  width: 70%;
+  min-height: 2px;
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+  transition: height 0.3s ease;
+}
+.barchart-value {
+  position: absolute;
+  top: -16px;
+  font-size: 11px;
+  color: var(--text);
+}
+.barchart-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
