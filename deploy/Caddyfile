@@ -1,0 +1,17 @@
+# Public entry for Iron & Breath.
+#
+# SITE_ADDRESS is injected from the environment (docker-compose.prod.yml):
+#   - ":80"            -> serve plain HTTP (access by the droplet's IP)
+#   - "gym.example.com" -> automatic HTTPS via Let's Encrypt (+ http->https)
+#
+# Caddy reverse-proxies everything to the web (nginx) container, which serves the
+# SPA and proxies /api to the API container.
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	reverse_proxy web:80 {
+		header_up Host {host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}

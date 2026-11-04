@@ -23,6 +23,7 @@ client/.vite/
 .env
 .env.*
 !.env.example
+!deploy/.env.prod.example
 
 # ---- OS ----
 .DS_Store

@@ -6,6 +6,7 @@ using IronAndBreath.Domain.Entities;
 using IronAndBreath.Infrastructure;
 using IronAndBreath.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -79,6 +80,16 @@ if (Encoding.UTF8.GetByteCount(jwt.Key) < 32)
         "Jwt:Key must be set to at least 32 bytes. Provide it via configuration or the Jwt__Key environment variable.");
 }
 
+// Behind a reverse proxy (Caddy/nginx) that terminates TLS: trust the forwarded
+// scheme/IP so links and client IPs are correct. The API is only reachable on the
+// internal Docker network, so forwarded headers from any proxy are accepted.
+builder.Services.Configure<ForwardedHeadersOptions>(o =>
+{
+    o.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    o.KnownNetworks.Clear();
+    o.KnownProxies.Clear();
+});
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
@@ -117,9 +128,12 @@ var app = builder.Build();
 // Ensure the local SQLite data directory exists before the connection is opened.
 Directory.CreateDirectory(Path.Combine(app.Environment.ContentRootPath, "data"));
 
-// Apply migrations + seed on startup in development. Guarded so production
-// deployments can run migrations out-of-band instead.
-if (app.Environment.IsDevelopment())
+// Apply migrations + seed on startup. Always in development; in production when
+// Database:MigrateOnStartup is true (the Droplet deployment sets this, so a single
+// `up` provisions/upgrades the schema with no out-of-band step). Idempotent:
+// re-running against an already-migrated database is a no-op.
+var migrateOnStartup = app.Configuration.GetValue<bool>("Database:MigrateOnStartup");
+if (app.Environment.IsDevelopment() || migrateOnStartup)
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -137,12 +151,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Skip HTTPS redirection in development so the Vite proxy can reach the API
-// over plain HTTP without a 307 dance through the dev certificate.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseHttpsRedirection();
-}
+// Honour X-Forwarded-* from the reverse proxy. TLS (and any http->https redirect)
+// is handled at the edge by Caddy, so the app itself does not redirect — this
+// avoids redirect loops when the container only listens on HTTP.
+app.UseForwardedHeaders();
 
 app.UseCors(CorsPolicy);
 app.UseAuthentication();

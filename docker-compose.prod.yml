@@ -1,0 +1,71 @@
+# Iron & Breath — production stack for a DigitalOcean Droplet.
+#
+#   ./install.sh                 # one-run setup (installs Docker, configures, starts)
+#   docker compose -f docker-compose.prod.yml up -d --build   # manual start
+#
+# Public entry is Caddy on 80/443. With SITE_ADDRESS set to a domain, Caddy gets
+# an automatic Let's Encrypt certificate (HTTPS); left as ":80" it serves plain
+# HTTP by the droplet's IP. The API is NOT published to the host — only reachable
+# on the internal network via the web container.
+#
+# Database: SQLite, persisted in ./data on the droplet (bind mount). To bring your
+# existing data, place your ironandbreath.db at ./data/ironandbreath.db before the
+# first start (see DEPLOY.md). Migrations run automatically on startup.
+services:
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: ironandbreath-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      # SQLite persisted in the ./data bind mount.
+      Database__Provider: Sqlite
+      Database__ConnectionString: Data Source=data/ironandbreath.db
+      # Apply EF migrations (and seed) on startup so a single `up` provisions the DB.
+      Database__MigrateOnStartup: "true"
+      Jwt__Issuer: iron-and-breath
+      Jwt__Audience: iron-and-breath
+      Jwt__Key: ${JWT_KEY:?set JWT_KEY in .env (min 32 chars)}
+      Jwt__ExpiryMinutes: "43200"
+      Google__ClientId: ${GOOGLE_CLIENT_ID:-}
+      CLAUDE_API_KEY: ${CLAUDE_API_KEY:-}
+    volumes:
+      - ./data:/app/data
+    expose:
+      - "8080"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: ironandbreath-web
+    depends_on:
+      - api
+    expose:
+      - "80"
+    restart: unless-stopped
+
+  caddy:
+    image: docker.io/library/caddy:2-alpine
+    container_name: ironandbreath-caddy
+    depends_on:
+      - web
+    environment:
+      # A bare ":80" serves HTTP by IP. Set to your domain (e.g. gym.example.com)
+      # for automatic HTTPS.
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+
+volumes:
+  caddy-data:
+  caddy-config:
