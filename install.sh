@@ -81,6 +81,21 @@ if command -v ufw >/dev/null 2>&1; then
   ok "Opened firewall ports 80/443 (and SSH)"
 fi
 
+# ---- 4b. Swap (small droplets OOM during the first build) ----
+MEM_MB=$(free -m | awk '/^Mem:/{print $2}')
+SWAP_MB=$(free -m | awk '/^Swap:/{print $2}')
+if [ "${MEM_MB:-0}" -lt 2048 ] && [ "${SWAP_MB:-0}" -lt 512 ]; then
+  say "Low memory (${MEM_MB}MB RAM, ${SWAP_MB}MB swap) — adding a 2G swap file so the build won't be killed"
+  if [ ! -f /swapfile ]; then
+    fallocate -l 2G /swapfile 2>/dev/null || dd if=/dev/zero of=/swapfile bs=1M count=2048
+    chmod 600 /swapfile
+    mkswap /swapfile >/dev/null
+  fi
+  swapon /swapfile 2>/dev/null || true
+  grep -q '/swapfile' /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
+  ok "Swap enabled ($(free -m | awk '/^Swap:/{print $2}')MB)"
+fi
+
 # ---- 5. Build & start ----
 say "Building and starting the stack (first run can take a few minutes)"
 $DC -f "$COMPOSE_FILE" up -d --build
